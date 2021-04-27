@@ -3,8 +3,8 @@ Release notes
 
 # Overview
 
-This repository aims to describe the data and method used to
-analyse AIS data broadcasted by fishing vessels and extract fishing activity.
+This repository aims to describe the data and method used in XXX to
+analyse AIS data from the Italian fishing fleet in the Adriatic Sea.
 
 <p>
 
@@ -267,9 +267,10 @@ head(dat_classified[["classification_result"]])
 
 <p>
 
-Fishing gear are assigned to vessels at monthly base using random
-forest. The model was trained to accommodate the variability in the
-prediction of the session classification algorithm.
+Fishing gear are assigned to vessels at monthly base using random forest
+(Liaw and Wiener ([2018](#ref-Liaw2018))). The model was trained to
+accommodate the variability in the prediction of the session
+classification algorithm.
 
 <p>
 
@@ -523,152 +524,17 @@ for(j in 1:length(ref_gear)){
 
 <br>
 
-# Internal function
+# References
 
-The following function are used internally to the main functions:
+<div id="refs" class="references">
 
-### Find in harbour
+<div id="ref-Liaw2018">
 
-<br>
+Liaw, Andy, and Matthew Wiener. 2018. “Package ’randomForest’. Breiman
+and Cutler’s Random Forests for Classification and Regressionage
+randomForest.”
+<https://cran.r-project.org/web/packages/randomForest/index.html>.
 
-``` r
-find_inport(data, ports)
-```
+</div>
 
-<br>
-
-  - data:
-  - ports:
-
-### Find the closest harbour
-
-This function was used to assign the harbor to fishing session the start
-or finish without a “in harbor” position. The departure or the arrival
-harbor was assigned considering the closest harbor respect to the first
-or last position of the session: <br>
-
-``` r
-closest_port(longitude , latitude, ports)
-```
-
-<br>
-
-  - longitude-latitude: are the coordinates of the first or last point
-    of the fishing session
-  - ports: is the shapefile with harbors locations
-
-### Import parameters
-
-<br>
-
-``` r
-import_parameters(parameters, centroids)
-```
-
-<br>
-
-  - parameters: an external csv file with the following parameters:
-
-  - centroids: an external csv file containing the set of centroids
-    values to test using the kmeans method in the classification
-    alghorithm
-
-### Classfied speed
-
-<br>
-
-``` r
-classify_speed(data, gear, xcentroids, pars)
-```
-
-<br>
-
-  - data:
-  - gear
-  - xcentroids
-  - pars
-
-### Make segment
-
-<br>
-
-``` r
-make_segment_lite(data, gear)
-```
-
-<br>
-
-  - data:
-  - gear:
-
-### Assign ping to session
-
-<br>
-
-``` r
-assign_session(data, session_table)
-```
-
-<br>
-
-  - data:
-  - session\_table:
-
-### Search cluster
-
-<br>
-
-``` r
-search_cluster(data, pars, gear)
-```
-
-<br>
-
-  - data:
-  - pars:
-  - gear:
-
-### Check cluster
-
-<br>
-
-``` r
-check_cluster(data, gear, threshold, low_speed)
-```
-
-<br>
-
-  - data:
-  - gear:
-  - threshold:
-  - low\_speed:
-
-### Data partition
-
-This is the function used to split a validated dataset in validation,
-training and test subset. The input dataset is represented by a validate
-<br>
-
-``` r
-data_partitioning(data)
-```
-
-<br>
-
-  - data: it is an input dataframe containing the ID of the vessel, the
-    session and the validated gear
-
-### Data partition
-
-This is the function used to split a validated dataset in validation,
-training and test subset. The input dataset is represented by a validate
-<br>
-
-``` r
-identify_trasmission_gaps(data, coord_sys)
-```
-
-<br>
-
-  - data: it is an input dataframe containing the ID of the vessel, the
-    session and the validated gear
+</div>
