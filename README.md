@@ -3,8 +3,8 @@ Release notes
 
 # Overview
 
-This repository aims to describe the data and method used in XXX to
-analyse AIS data from the Italian fishing fleet in the Adriatic Sea.
+This repository aims to describe the data and method used to
+analyse AIS data broadcasted by fishing vessels and extract fishing activity.
 
 <p>
 
