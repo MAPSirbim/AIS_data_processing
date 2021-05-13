@@ -22,7 +22,7 @@ install.missing.packages=T # set to TRUE if want to allow automatic installation
 write.output=T # set to TRUE if table with results in output file is wanted
 output.name="test"
 
-# Load data ----
+# Load functions and parameters ----
 
 source("global_functions.R") # load all internal function required
 
