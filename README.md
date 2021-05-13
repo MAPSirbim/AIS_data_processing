@@ -398,7 +398,7 @@ fishing_tracks=classification_workflow(data=data,
 
 fishing tracks can be aggregate using a spatial grid and the results can
 be plotted
-<img src="results/plots/OTB1-2015-4.png" width="100%" style="display: block; margin: auto;" />
+<img src="demo/OTB1-2015-4.png" width="100%" style="display: block; margin: auto;" />
 
 # Multiple vessels with different gears
 
