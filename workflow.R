@@ -1,5 +1,5 @@
 # General settings ----
-#k
+
 rm(list=ls(all=FALSE)) # clear previous variables etc
 #options(digits=3) # displays all numbers with three significant digits as default
 options(dplyr.summarise.inform=FALSE)
