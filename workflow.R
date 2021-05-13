@@ -1,13 +1,12 @@
-#-----------------------------------------
 # General settings ----
-#-----------------------------------------
+
 rm(list=ls(all=FALSE)) # clear previous variables etc
 #options(digits=3) # displays all numbers with three significant digits as default
 options(dplyr.summarise.inform=FALSE)
 options("pbapply.pb"="txt")
-#-----------------------------------------
+
 # Required settings, File names ----
-#-----------------------------------------
+
 mydir= "" # Working directory where the folder is stored
 dirmaps="maps" # path of the maps directory
 file_parameters="data/parameters.csv" # import parameter table
@@ -15,16 +14,16 @@ file_centroids="data/centroids.csv" # import centroids
 outdir="results"
 setwd(mydir)
 
-#-----------------------------------------
+
 # General settings for the analysis ----
-#-----------------------------------------
+
 wgs="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 install.missing.packages=T # set to TRUE if want to allow automatic installation of missing packages.
 write.output=T # set to TRUE if table with results in output file is wanted
 output.name="test"
-#-----------------------------------------
+
 # Load data ----
-#-----------------------------------------
+
 source("global_functions.R") # load all internal function required
 
 ## the following lines load and arrange spatial layers required in the next analyses
@@ -41,7 +40,7 @@ st_crs(grid)=wgs # set crs
 centroids=inport_parameters(file.path(file_parameters), file.path(file_centroids))[[2]]
 pars=inport_parameters(file.path(file_parameters), file.path(file_centroids))[[1]]
 
-## download baselayer fromnaturl earth
+## download baselayer from natural earth
 worldmap <- rnaturalearth::ne_countries(scale='medium', type='map_units',   returnclass='sf') # import the map of land (need rnaturalearth library)
 worldmap <- worldmap[,c("name_long", "geometry")]
 
@@ -51,9 +50,9 @@ all_dat<-all_dat[,c("MMSI", "datetime", "longitude", "latitude", "speed")] # sel
 vessels <-2 # Select a vessel. In the released sample there are OTB1, TBB1, PTM1, PS1 and OTHER1. 
 dat=all_dat[which(all_dat$MMSI == vessels),] # select a vessel. In the released sample there are OTB1, TBB1, PTM1, PS1 and OTHER1.
 
-#-----------------------------------------
+
 # Fishing trip ----
-#-----------------------------------------
+
 # The create_fishing_trip function allows to identify the starting and the ending point of all fishing trips performed by a vessel, 
 # as well as information regarding the port of departure and of arrival (harbor name, country and statistical area).
 
@@ -62,17 +61,17 @@ dat_trip=create_fishing_trip(data=dat,
                              ports_buffer=port_buf,
                              coastal_ban_zone=coastal_ban_zone)
 
-# The assign_session function paste the information from the fishing session (id of the session) to the initial dataset. 
-# Points that does not fall within a session are removed.
+# The assign_trip function paste the information from the fishing trip (id of the trip) to the initial dataset. 
+# Points that does not fall within a trip are removed.
 dat_with_trip=assign_trip(data=dat, 
                           trip_table=dat_trip)
 
-#-----------------------------------------
+
 # Classification ----
-#-----------------------------------------
-# The classification_wrapper function applies a cascade of classification algorithms on each fishing session. 
+
+# The classification_wrapper function applies a cascade of classification algorithms on each fishing trip. 
 # The output is a list of two objects: "classification_result" and "data_labelled". 
-# "classification_result" contains the results of the classification algorithm for each fishing session; 
+# "classification_result" contains the results of the classification algorithm for each fishing trip; 
 # "data_labelled" returns the input data with one additional column for each classification algorithm, used to indicate the type of activity of the point. 
 # The write.output argument permit to store the data needed to train the Random Forest model.
 # The output.name argument is optional and permit to set the name of oputput file.
@@ -84,9 +83,9 @@ dat_classified=classification_wrapper(vessel_data=dat_with_trip,
 # The decision gear function applies the Random Forest prediction on the result of the "classification_wrapper" function.
 gear=decision_gear(data=dat_classified[["classification_result"]])
 
-#-----------------------------------------
+
 # Export of fishing data ----
-#-----------------------------------------
+
 # The identify_fishing_points function uses the prediction of the Random Forest model to identify the gear deployed, 
 # and label each point of the original as fishing (1) or no fishing (0).
 fishing_points=identify_fishing_points(data=dat_classified[["data_labelled"]], gear=gear, coord_sys = wgs)
@@ -94,9 +93,9 @@ fishing_points=identify_fishing_points(data=dat_classified[["data_labelled"]], g
 # The make_fishing_tracks function trasform the fishing points into spatial segments.
 fishing_tracks=make_fishing_tracks(data=fishing_points, coord_sys=wgs, pars=pars)
 
-#-----------------------------------------
+
 # Mapping the results ----
-#-----------------------------------------
+
 # aggregation on the full time series
 vessel_grid=estimate_fishing_effort(fishing_tracks, grid=grid)
 
@@ -128,9 +127,9 @@ for(i in 1:length(vessel_grid)){
   ggsave(file.path(outdir, "plots", paste0(xmmsi, "-",ref_gear, "-", ref_year, ".png")), p)
 }
 
-#---------------------------------------------
-# Full workflow application, single vessel ---
-#---------------------------------------------
+
+# Full workflow application, single vessel ----
+
 # The classification_workflow applies all the functions presented in the previous section in one single command. 
 fishing_tracks=classification_workflow(data=dat,
                                        ports=ports, 
@@ -141,10 +140,8 @@ fishing_tracks=classification_workflow(data=dat,
                                        output.type="tracks",
                                        write.output = T)
 
-#---------------------------------------------
-# Full workflow application, 
-# multiple vessels by gear and month    
-#---------------------------------------------
+
+# Full workflow application,multiple vessels by gear and month ----
 all_dat<-read.csv("data/datatest.csv")
 all_dat=all_dat[,c("MMSI", "datetime", "longitude", "latitude", "speed")]
 all_dat$MMSI=as.character(all_dat$MMSI)
