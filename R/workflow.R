@@ -1,5 +1,5 @@
 # R4AIS v1.0.1
-# Authors: Galdelli A., Armelloni E.N., Ferr? C., Pulcinella J., Tassetti A.N.
+# Authors: Galdelli A., Armelloni E.N., Ferra C., Pulcinella J., Tassetti A.N.
 # Release date: 14/05/2021
 # For any issue write to maps.irbim@gmail.com
 #
