@@ -8,7 +8,7 @@ Release notes
 
 This R code aims to analyze Automatic Identification System (AIS) data.
 
-
+(Galdelli et al. ([2018](#ref-Galdelli2018)))
 
 <p>
 
@@ -46,7 +46,7 @@ ENA, & MAPS-MArine sPatial reSearch. (2021, May 14). MAPSirbim/AIS_data_processi
 
 <div id="refs" class="references">
 
-<div id="ref-Liaw2018">
+<div id="ref-Galdelli2018">
 
 Liaw, Andy, and Matthew Wiener. 2018. “Package ’randomForest’. Breiman
 and Cutler’s Random Forests for Classification and Regressionage
@@ -56,3 +56,6 @@ randomForest.”
 </div>
 
 </div>
+
+
+
