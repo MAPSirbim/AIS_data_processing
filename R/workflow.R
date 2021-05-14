@@ -1,5 +1,5 @@
 # R4AIS v1.0.1
-# Authors: Galdelli A., Armelloni E.N., Ferrà C., Pulcinella J., Tassetti A.N.
+# Authors: Galdelli A., Armelloni E.N., Ferr? C., Pulcinella J., Tassetti A.N.
 # Release date: 14/05/2021
 # For any issue write to maps.irbim@gmail.com
 #
@@ -18,7 +18,7 @@ rm(list=ls(all=FALSE)) # clear previous variables etc
 #options(digits=3) # displays all numbers with three significant digits as default
 options(dplyr.summarise.inform=FALSE)
 options("pbapply.pb"="txt")
-setwd("..") # Working directory where the folder is stored. Default is one level backward
+setwd("..") # Working directory where the folder is stored. Default is one level backward to "R" folder
 mydir=getwd()
 
 # Required File names ----
