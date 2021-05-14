@@ -1,5 +1,5 @@
 - data folder
-  * centroids (.csv): centroids for k-means algorithms
+  -centroids (.csv): centroids for k-means algorithms
   -datatest (.csv): dataset for demo run
   -parameters (.csv): contains parameters for classification algorithms, and time lag to identify trasmission gaps
 
