@@ -6,9 +6,8 @@ Release notes
 
 # Overview
 
-This R code aims to analyze Automatic Identification System (AIS) data.
-
-(Galdelli et al. ([2018](#ref-Galdelli2018)))
+This R code aims to analyze Automatic Identification System (AIS) data, 
+and is an improvement of the method described in Galdelli et al. ([2019](#ref-Galdelli2018))
 
 <p>
 
@@ -31,7 +30,7 @@ In this repository we release also:
 
 <p>
 
-A summary description of these data is provided in the Release notes. <br>
+A summary description of these data is provided in the [Release notes](https://github.com/MAPSirbim/AIS_data_processing/tree/main/docs). <br>
 
 Please cite as:
 <p>
@@ -46,16 +45,20 @@ ENA, & MAPS-MArine sPatial reSearch. (2021, May 14). MAPSirbim/AIS_data_processi
 
 <div id="refs" class="references">
 
-<div id="ref-Galdelli2018">
+<div id="ref-Galdelli2019">
 
-Liaw, Andy, and Matthew Wiener. 2018. “Package ’randomForest’. Breiman
-and Cutler’s Random Forests for Classification and Regressionage
-randomForest.”
-<https://cran.r-project.org/web/packages/randomForest/index.html>.
+Galdelli, A., Mancini, A., Tassetti, A. N., Ferrà Vega, C., Armelloni, E., Scarcella, G., Fabi, G., et al. 2019. 
+"A Cloud Computing Architecture to Map Trawling Activities Using Positioning Data." 
+In Volume 9: 15th IEEE/ASME International Conference on Mechatronic and Embedded Systems and Applications. 
+American Society of Mechanical Engineers. <https://asmedigitalcollection.asme.org/IDETC-CIE/proceedings/IDETC-CIE2019/59292/Anaheim,>
+California, USA/1070321. DOI: 10.1115/DETC2019-97779
 
 </div>
 
 </div>
+
+
+
 
 
 
