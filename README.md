@@ -1,11 +1,8 @@
 
 
 
-Release notes
+Overview
 ================
-
-# Overview
-
 This R code aims to analyze Automatic Identification System (AIS) data, 
 and is an improvement of the method described in Galdelli et al. ([2019](#ref-Galdelli2018))
 
