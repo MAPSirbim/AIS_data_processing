@@ -29,13 +29,6 @@ In this repository we release also:
 
 A detailed description of the methodology is provided in the [Release notes](https://github.com/MAPSirbim/AIS_data_processing/tree/main/docs). <br>
 
-Please cite this code as:
-<p>
-ENA, & MAPS-MArine sPatial reSearch. (2021, May 14). MAPSirbim/AIS_data_processing: R4AIS (Version v1.0.1). Zenodo. http://doi.org/10.5281/zenodo.4761368
-
-<p>
-
-[![DOI](https://zenodo.org/badge/362045294.svg)](https://zenodo.org/badge/latestdoi/362045294)
 
 
 # References
