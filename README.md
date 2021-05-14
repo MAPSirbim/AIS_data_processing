@@ -1,5 +1,5 @@
 
-[![DOI](https://zenodo.org/badge/362045294.svg)](https://zenodo.org/badge/latestdoi/362045294)
+
 
 Release notes
 ================
@@ -7,6 +7,8 @@ Release notes
 # Overview
 
 This R code aims to analyze Automatic Identification System (AIS) data.
+
+[![DOI](https://zenodo.org/badge/362045294.svg)](https://zenodo.org/badge/latestdoi/362045294)
 
 <p>
 
