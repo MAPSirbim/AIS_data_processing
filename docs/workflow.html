@@ -359,7 +359,7 @@ div.tocify {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="workflow.html">Workflow</a>
+  <a href="workflow.html">Processing and Analysis</a>
 </li>
 <li>
   <a href="global_functions.html">Functions</a>
@@ -443,85 +443,6 @@ head(data)</code></pre>
 <div id="fishing-trip" class="section level2">
 <h2>Fishing trip</h2>
 <p>The create_fishing_trip function identifies vessel-specific fishing trips for each vessel, as sequences of points broadcasted by a vessel, from the time it leaves the port until it returns. To run the function, four datasets are required to complete the entire workflow: the sequence of AIS positions of a vessel, the coastal_ban_zone layer, and 2 layers related to the ports. As AIS transmission gaps (loss of signal of at least 30 minutes) can hamper the identification of the departure and arrival ports, a recovery function was internally applied to join consecutive trips where the departure/arrival port was too far to be assigned. In order to join consecutive trips the function overlays the ending/starting points with the coastal_ban_zone, compares ids between consecutive ending/starting points, compares timestamps and forces a starting and ending port for each trip. In particular, fishing trips are joined and the nearest port is assigned if ending and starting points are consecutive, have a temporal distance shorter than 24 h and at least one is outside the coastal_ban_zone. At the end of the recovery process, for trips that still miss departure and/or arrival ports, the internal function closest_port_recovery is used to force port assignment under other conditions.</p>
-<pre class="r"><code>dat_session= create_fishing_trip(data, 
-                                 ports,  
-                                 ports_buffer, 
-                                 coastal_ban_zone)</code></pre>
-<pre><code>## ==============================</code></pre>
-<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries
-
-## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries</code></pre>
-<pre><code>## ============</code></pre>
-<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries
-
-## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries</code></pre>
-<pre><code>## =</code></pre>
-<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries
-
-## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries</code></pre>
-<pre><code>## ========</code></pre>
-<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries
-
-## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries</code></pre>
-<pre><code>## ==============</code></pre>
-<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries
-
-## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries</code></pre>
-<pre><code>## ========</code></pre>
-<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries
-
-## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries</code></pre>
-<pre><code>## ==</code></pre>
-<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries
-
-## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries</code></pre>
-<pre><code>## =</code></pre>
-<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries
-
-## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries</code></pre>
-<pre><code>## =</code></pre>
-<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries
-
-## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries</code></pre>
-<pre><code>## ==</code></pre>
-<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries
-
-## Warning: attribute variables are assumed to be spatially constant throughout all
-## geometries</code></pre>
-<pre><code>## =
-##  trip create complete!!!
-##  Recovery trip
-##  Recovery harbours=====================================================================</code></pre>
-<pre><code>## Warning in `[&lt;-.factor`(`*tmp*`, iseq, value = &quot;Fano&quot;): invalid factor level, NA
-## generated</code></pre>
-<pre><code>## ===========....complete!!!</code></pre>
-<pre class="r"><code>head(dat_session)</code></pre>
-<pre><code>##   MMSI trip     start_timestamp       end_timestamp departure arrival
-## 1    2    1 2018-06-10 21:28:44 2018-06-12 00:04:23    Ancona  Ancona
-## 2    2    2 2018-06-12 00:16:31 2018-06-14 06:31:33    Ancona  Ancona
-## 4    2    4 2018-06-17 21:43:24 2018-06-19 00:07:46    Ancona  Ancona
-## 5    2    5 2018-06-19 00:44:10 2018-06-21 05:04:30    Ancona  Ancona
-## 6    2    6 2018-06-24 21:36:51 2018-06-26 00:00:42    Ancona  Ancona
-## 7    2    7 2018-06-26 00:12:50 2018-06-27 00:23:02    Ancona  Ancona</code></pre>
 </div>
 </div>
 
