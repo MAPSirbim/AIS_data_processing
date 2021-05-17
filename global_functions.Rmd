@@ -1,0 +1,167 @@
+---
+title: "Internal Function"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    collapsed: false
+    number_sections: false
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The following functions are used internally to the main functions:
+
+## Find in harbour
+<br>
+
+```{r funcdef8, echo = F, eval = F}
+find_inport(data, ports)
+```
+
+```{r funcdef8, eval = F}
+```
+<br>
+
+* data:
+* ports:
+
+## Find the closest harbour
+This function was used to assign the harbor to fishing session the start or finish without a "in harbor" position. The departure or the arrival harbor was assigned considering the closest harbor respect to the first or last position of the session:
+<br>
+
+```{r funcdef1, echo = F, eval = F}
+closest_port(longitude , latitude, ports)
+```
+
+```{r funcdef1, eval = F}
+```
+<br>
+
+* longitude-latitude: are the coordinates of the first or last point of the fishing session
+* ports: is the shapefile with harbors locations
+
+## Import parameters
+<br>
+
+```{r funcdef3, echo = F, eval = F}
+import_parameters(parameters, centroids)
+```
+
+```{r funcdef3, eval = F}
+```
+<br>
+
+* parameters: an external csv file with the following parameters:
+  
+
+* centroids: an external csv file containing the set of centroids values to test using the kmeans method in the classification alghorithm
+
+## Classfied speed
+<br>
+
+```{r funcdef4, echo = F, eval = F}
+classify_speed(data, gear, xcentroids, pars)
+```
+
+```{r funcdef4, eval = F}
+```
+<br>
+
+* data:
+* gear
+* xcentroids
+* pars
+
+## Make segment
+<br>
+
+```{r funcdef5, echo = F, eval = F}
+make_segment_lite(data, gear)
+```
+
+```{r funcdef5, eval = F}
+```
+<br>
+
+* data:
+* gear:
+
+## Assign ping to session
+<br>
+
+```{r funcdef6, echo = F, eval = F}
+assign_session(data, session_table)
+```
+
+```{r funcdef6, eval = F}
+```
+<br>
+
+* data:
+* session_table:
+
+
+## Search cluster
+<br>
+
+```{r funcdef7, echo = F, eval = F}
+search_cluster(data, pars, gear)
+```
+
+```{r funcdef7, eval = F}
+```
+<br>
+
+* data:
+* pars:
+* gear:
+
+## Check cluster
+<br>
+
+```{r funcdef9, echo = F, eval = F}
+check_cluster(data, gear, threshold, low_speed)
+```
+
+```{r funcdef9, eval = F}
+```
+<br>
+
+* data: 
+* gear:
+* threshold:
+* low_speed:
+
+
+## Data partition
+This is the function used to split a validated dataset in validation, training and test subset. The input dataset is represented by a validate 
+<br>
+
+```{r funcdef2, echo = F, eval = F}
+data_partitioning(data)
+```
+
+```{r funcdef2, eval = F}
+```
+<br>
+
+* data: it is an input dataframe containing the ID of the vessel, the session and the validated gear
+
+
+## Data partition
+This is the function used to split a validated dataset in validation, training and test subset. The input dataset is represented by a validate 
+<br>
+
+```{r funcdef999, echo = F, eval = F}
+identify_trasmission_gaps(data, coord_sys)
+```
+
+```{r funcdef999, eval = F}
+```
+<br>
+
+* data: it is an input dataframe containing the ID of the vessel, the session and the validated gear
