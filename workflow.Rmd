@@ -11,6 +11,11 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(openxlsx)
+library(flextable)
+library(dplyr)
+library(knitr)
+library(kableExtra)
 ```
 
 # Summary
@@ -80,8 +85,6 @@ dat_session= create_fishing_trip(data,
 ```
 <br>
 
-
-
 * data: AIS positions
 * ports: port locations (.shp) 
 * ports_buffer: 1 km buffer, created around the input ports (.shp) 
@@ -140,6 +143,128 @@ dat_classified=classification_wrapper(vessel_data,
 <p> In order to accommodate the intra-month variability of the predicted gears, fishing gears are finally reassigned to trips on a monthly basis appling a Random Forest model (RF) using the Random Forest library available in R (Liaw and Viener, 2002). The classification unit of the RF is the set of fishing trips performed in a month by a vessel. 
 
 <p> Before training the RF, 524 known vessels (8463 units) are randomly stratified while splitting up into 2 datasets (90:10, dataset 1 and dataset 2, respectively) according to the number of vessels by gear class. The dataset 1 (7572 units) is further splitted in 70:30 equally portioning among the 5 gears (Training and Validation, respectively) to allow model tuning. The dataset 2 (891 units) is used as a test to evaluate classification performance and transferability of the trained RF. 
+<br>
+
+```{r out.width = "100%", echo=FALSE, fig.align='center', results = "asis"}
+xx = read.xlsx("site_documents/data_summary_rf.xlsx")
+xx = flextable(xx) %>% autofit()
+xx = width(xx, width = dim(xx)$widths*6/(flextable_dim(xx)$widths))
+cat(knit_print(xx,
+               caption = "Table1: Dataset used to train the RF. Records refer to a classification unit, that is a set of fishing trips performed by a vessel in a month. The gear was assigned manually to each fishing trip, after a visual inspection of the AIS data."))
+```
+<br>
+
+The decision_gear function uses the trained RF to predict the fishing gear for each month. The features used to predict the monthly gear consist in the ratio between the trips labelled as positive for each gear and the total number of the fishing trips (ratio_otb1; ratio_otb2; ratio_ptm; ratio_tbb; ratio_ps). 
+```{r gear, echo = F, eval = F}
+gear = decision_gear(data = dat_classified[["classification_result"]])
+```
+
+```{r gear, eval = F}
+```
+<br>
+
+* data: requires the binary results of the classification algorithms for each fishing trip (output of the classification wrapper “dat_classified[["classification_result"]]”).
+
+The result of the decision gear function is a summary of the binary results aggregated at monthly level and in addition it gives the output of the RF (i.e., gear). 
+
+## Fishing activity
+According to the monthly predicted gear, fishing points are identified (identify_fishing_points function) recycling the clusters (k-means - towed gears; dbscan - purse seiners) and retrieving points corresponding to fishing clusters. 
+
+```{r fpoint, echo = F, eval = F}
+fishing_points=identify_fishing_points(data=dat_classified[["data_labelled"]], gear=gear)
+head(fishing_points)
+```
+
+```{r fpoint, eval = F}
+```
+<br>
+
+* data: requires AIS data, indexed by fishing trip and  labelled with the information from k-means and dbscan (output of the classification wrapper “dat_classified[["data_labelled"]]”).
+* gear: the result of the decision gear function, containing the gear predicted by the Random Forest classifier
+
+<p> The fishing_point function returns the original AIS data, labelled with the gear identified and with a column (binary) indicating if the points are considered as fishing activity.
+*POINT is a character codification used instead of the real value of the geometry string
+
+<p> The make_fishing_tracks function extracts fishing tracks from fishing points, using a temporal threshold (thr_minute, default value set to 30 minutes) to connect successively ordered fishing points ≤ thr_minutes and avoid false fishing tracks connecting two subsequent fishing events. The result of make_fishing_tracks function is a spatial object where the fishing geometries are stored.
+
+```{r fsegment, echo = F, eval = F}
+fishing_tracks=make_fishing_tracks(data=fishing_points, coord_sys=wgs, pars=pars)
+head(fishing_tracks)
+```
+
+```{r fsegment, eval = F}
+```
+<br>
+
+* fishing_points: AIS data  labelled with the gear identified and with a column (binary) identifying the data considered as fishing activity
+* wgs: coordinate reference system (e.g.: WGS 84)
+* pars: object storing the parameter file.
+
+*LINESTRING is a character codification used instead of the real value of the geometry string
+<p>
+
+## Single command function
+The classification_workflow function applies all the functions presented in the previous sections in one single command starting from raw data and returns the fishing tracks/centroids of a vessel. The output type parameter allows storing fishing geometries as points or linestrings.
+<br>
+
+```{r cl_workflow, echo = F, eval = F}
+fishing_tracks=classification_workflow(data=data,
+                                       ports=ports, 
+                                       ports_buffer=port_buf,
+                                       coastline=coastline,
+                                       pars=pars,
+                                       coord_sys=wgs,
+                                       output.type="segments")
+```
+
+```{r cl_workflow, eval = F}
+```
+<br>
+
+* data: raw AIS data
+* ports: .shp of the port locations
+* ports_buffer: is the 1 km buffer calculated from the input ports .shp at the beginning of the workflow. 
+* coastal_ban_zone: .shp of the zone where the use of towed gears is prohibited
+* wgs: coordinate reference system (e.g.: WGS 84)
+* pars: object storing the parameter file.
+* output.type: specify if the output will be the fishing tracks (argument: “tracks”) or the fishing points (argument: “points”).
+<br>
+
+## Estimate fishing effort
+Finally, the estimate_fishing_effort function returns a grid populated with cumulative fishing time for the period covered by the input data (hours fishing vessels spent operating gear in each grid cell). Fishing tracks were intersected with the 0.1° grid and durations were computed for each output feature. For towed gears, fishing hours are calculated by dividing resulting lengths by the inherited mean fishing speed. For the purse seiners, fishing hours are calculated by assigning the duration of the cluster to its centroid. The cumulative fishing time was quantified spatial joining each cell with overlapping centroid/portions of hauls, and summing relative durations.
+
+```{r effort, echo = F, eval = F}
+vessel_grid=estimate_fishing_effort(fishing_tracks, grid=grid)
+```
+
+```{r effort, eval = F}
+```
+<br>
+
+* fishing_tracks: spatial object containing the geometries of the fishing activity
+* grid: spatial object containing the reticule covering the area of interest that will be intersected with the fishing tracks.
+
+<p> Effort grid and fishing tracks can be plotted in effort maps.
+
+
+# Multiple vessels with different gears
+To apply the workflow to multiple vessels and aggregate related fishing activities with different temporal frames (e.g., by year and month), the analysis can be arranged as follow: 
+
+1. Create fishing segments for all vessels and store them in a list. Each element of the list is a vessel, whose data is again stored in a list as long as the number of different gears predicted for that vessel. The classification_workflow function is applied iteratively on all vessels present in the data and it allows to calculate the fishing geometry in one single command. 
+
+2. Aggregate fishing segments by fishing gear and time period (e.g., month). The first rows of the following code selects all fishing trips that are classified with the same gear. Fishing hours of vessels predicted with the same fishing gear in the same period, are aggregated with respect to a spatial grid to represent the period pattern of spatial activity. In the last rows, grid data is saved in tabular dataframe and in an effort map.
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
