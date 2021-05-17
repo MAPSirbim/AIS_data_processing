@@ -19,11 +19,11 @@ The following functions are used internally to the main functions:
 This function pastes the information from the fishing trip (id of the trip) to the initial dataset. Points that do not fall within a trip are removed.
 <br>
 
-```{r funcdef8, echo = F, eval = F}
+```{r funcdef1, echo = F, eval = F}
 assign_trip(data, trip_table)
 ```
 
-```{r funcdef8, eval = F}
+```{r funcdef1, eval = F}
 ```
 <br>
 
@@ -34,11 +34,11 @@ assign_trip(data, trip_table)
 This function assembles and formats the output of the fishing trip table result.
 <br>
 
-```{r funcdef8, echo = F, eval = F}
+```{r funcdef2, echo = F, eval = F}
 build_trip(data, index, xstart, xpos, index2, ports_buffer, ports)
 ```
 
-```{r funcdef8, eval = F}
+```{r funcdef2, eval = F}
 ```
 <br>
 
@@ -54,11 +54,11 @@ build_trip(data, index, xstart, xpos, index2, ports_buffer, ports)
 This function analyzes the speed profile of the points contained within a spatial cluster, and indicates if the proportion of the point indicated by the target speed is above a specified threshold
 <br>
 
-```{r funcdef8, echo = F, eval = F}
+```{r funcdef3, echo = F, eval = F}
 check_cluster(data, gear, threshold, low_speed)
 ```
 
-```{r funcdef8, eval = F}
+```{r funcdef3, eval = F}
 ```
 <br>
 
@@ -72,11 +72,11 @@ This function identifies the size of each track.
 
 <br>
 
-```{r funcdef8, echo = F, eval = F}
+```{r funcdef4, echo = F, eval = F}
 classify(data)
 ```
 
-```{r funcdef8, eval = F}
+```{r funcdef4, eval = F}
 ```
 <br>
 
@@ -88,11 +88,11 @@ Classified speed applies the k-means algorithm on fishing speed data, then it us
 
 <br>
 
-```{r funcdef8, echo = F, eval = F}
+```{r funcdef5, echo = F, eval = F}
 classify_speed(data, gear, xcentroids, pars)
 ```
 
-```{r funcdef8, eval = F}
+```{r funcdef5, eval = F}
 ```
 <br>
 
@@ -107,11 +107,11 @@ This function is used to individuate if there are points (x,y) that fall within 
 
 <br>
 
-```{r funcdef8, echo = F, eval = F}
+```{r funcdef6, echo = F, eval = F}
 find_inport(data, ports)
 ```
 
-```{r funcdef8, eval = F}
+```{r funcdef6, eval = F}
 ```
 <br>
 
@@ -123,11 +123,11 @@ find_inport(data, ports)
 This function was used to assign the harbor to fishing session the start or finish without a "in harbor" position. The departure or the arrival harbor was assigned considering the closest harbor respect to the first or last position of the session:
 <br>
 
-```{r funcdef1, echo = F, eval = F}
+```{r funcdef7, echo = F, eval = F}
 closest_port(longitude , latitude, ports)
 ```
 
-```{r funcdef1, eval = F}
+```{r funcdef7, eval = F}
 ```
 <br>
 
@@ -138,11 +138,11 @@ closest_port(longitude , latitude, ports)
 This function is used to assign the beginning and ending ports of fishing tripsduring the recovery step of the create_fishing_trip function. This function individuate if there are harbours closest then 50 km with respect to the first or last position of the trip. If there are harbours, the function selects the closest five, then it checks if the reference_port is included in the closest five. If yes, it assign this harbour, if no, it assign the closest harbour:
 <br>
 
-```{r funcdef1, echo = F, eval = F}
+```{r funcdef8, echo = F, eval = F}
 closest_port_recovery(longitude , latitude, ports, reference_port)
 ```
 
-```{r funcdef1, eval = F}
+```{r funcdef8, eval = F}
 ```
 <br>
 
@@ -156,11 +156,11 @@ This function is used to assign the beginning and ending ports of fishing trips,
 
 <br>
 
-```{r funcdef1, echo = F, eval = F}
+```{r funcdef9, echo = F, eval = F}
 get_port(longitude , latitude, ports_buffer, ports)
 ```
 
-```{r funcdef1, eval = F}
+```{r funcdef9, eval = F}
 ```
 <br>
 
@@ -175,11 +175,11 @@ This function recycles the data gaps from the function "core_function" and retri
 
 <br>
 
-```{r funcdef1, echo = F, eval = F}
+```{r funcdef10, echo = F, eval = F}
 identify_trasmission_gaps(data, coord_sys)
 ```
 
-```{r funcdef1, eval = F}
+```{r funcdef10, eval = F}
 ```
 <br>
 
@@ -191,11 +191,11 @@ The import_parameters allows to load the required parameters of several internal
 
 <br>
 
-```{r funcdef3, echo = F, eval = F}
+```{r funcdef11, echo = F, eval = F}
 import_parameters(parameters, centroids)
 ```
 
-```{r funcdef3, eval = F}
+```{r funcdef11, eval = F}
 ```
 <br>
 
@@ -208,11 +208,11 @@ This function is used to individuate if the last point of a fishing trip (n) and
 
 <br>
 
-```{r funcdef3, echo = F, eval = F}
+```{r funcdef12, echo = F, eval = F}
 incoastal_ban_zone(longitude_start , latitude_start , longitude_end , latitude_end, coastline)
 ```
 
-```{r funcdef3, eval = F}
+```{r funcdef12, eval = F}
 ```
 <br>
 
@@ -226,11 +226,11 @@ This function assigns unique ids to subsequent points if they fall within the sa
 
 <br>
 
-```{r funcdef3, echo = F, eval = F}
+```{r funcdef13, echo = F, eval = F}
 make_segment_lite(data, gear)
 ```
 
-```{r funcdef3, eval = F}
+```{r funcdef13, eval = F}
 ```
 <br>
 
@@ -243,11 +243,11 @@ This function applies the dbscan algorithm to identify spatial clusters in the i
 
 <br>
 
-```{r funcdef3, echo = F, eval = F}
+```{r funcdef14, echo = F, eval = F}
 search_cluster(data, pars, gear)
 ```
 
-```{r funcdef3, eval = F}
+```{r funcdef14, eval = F}
 ```
 <br>
 
