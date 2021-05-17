@@ -13,7 +13,6 @@
 
 <title>Internal Function</title>
 
-<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -26,6 +25,8 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="site_libs/anchor-sections-1.0/anchor-sections.js"></script>
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -80,7 +81,6 @@ h6 {
   text-align: left;
 }
 </style>
-
 
 
 
@@ -382,14 +382,75 @@ div.tocify {
 
 
 <p>The following functions are used internally to the main functions:</p>
+<div id="assign-ping-to-trip" class="section level2">
+<h2>Assign ping to trip</h2>
+<p>This function pastes the information from the fishing trip (id of the trip) to the initial dataset. Points that do not fall within a trip are removed. <br></p>
+<pre class="r"><code>assign_trip(data, trip_table)</code></pre>
+<p><br></p>
+<ul>
+<li>data: raw location data.</li>
+<li>trip_table: a table with id of the vessel, and the starting and ending id of the locations componing a fishing trip.</li>
+</ul>
+</div>
+<div id="build-trip" class="section level2">
+<h2>Build trip</h2>
+<p>This function assembles and formats the output of the fishing trip table result. <br></p>
+<pre class="r"><code>build_trip(data, index, xstart, xpos, index2, ports_buffer, ports)</code></pre>
+<p><br></p>
+<ul>
+<li>data: raw AIS data</li>
+<li>index: header specifying the iteration</li>
+<li>xstart: indicates the id of the first point of the trip</li>
+<li>xpos: indicates the offset to be imposed on xstart</li>
+<li>index2: header specifying the id of the fishing trip to be assembled</li>
+<li>ports_buffer: 0.001° buffer of the ports layer</li>
+<li>ports: ports layer</li>
+</ul>
+</div>
+<div id="check-cluster" class="section level2">
+<h2>Check cluster</h2>
+<p>This function analyzes the speed profile of the points contained within a spatial cluster, and indicates if the proportion of the point indicated by the target speed is above a specified threshold <br></p>
+<pre class="r"><code>check_cluster(data, gear, threshold, low_speed)</code></pre>
+<p><br></p>
+<ul>
+<li>data: AIS data with a column indexing the points belonging to spatial clusters and one indicating the cluster identified * by the k-means for each point</li>
+<li>gear: target fishing gear. Accepted values are PTM, PS</li>
+<li>threshold: threshold to filter target speed data</li>
+<li>low_speed: indicates which is the cluster of the <i> k-means </i> referring to the target speed.</li>
+</ul>
+</div>
+<div id="classify" class="section level2">
+<h2>Classify</h2>
+<p>This function identifies the size of each track.</p>
+<p><br></p>
+<pre class="r"><code>classify(data)</code></pre>
+<p><br></p>
+<ul>
+<li>data: output of the classifify_speed function</li>
+</ul>
+</div>
+<div id="classify-speed" class="section level2">
+<h2>Classify speed</h2>
+<p>Classified speed applies the k-means algorithm on fishing speed data, then it uses time information to identify transmission gaps (or data with time lag &gt; parameter specified by user). Classification results are homogenized with a lookahead (3 points) and finally points are clustered into tracks based on k-means result and time information.</p>
+<p><br></p>
+<pre class="r"><code>classify_speed(data, gear, xcentroids, pars)</code></pre>
+<p><br></p>
+<ul>
+<li>data: raw AIS data</li>
+<li>gear: target gear. Accepted values are OTB1, OTB2, PTM, TBB, PS.</li>
+<li>xcentroids: object containing the centroid list inherited from the input .csv file.</li>
+<li>pars: object storing the parameter file.</li>
+</ul>
+</div>
 <div id="find-in-harbour" class="section level2">
 <h2>Find in harbour</h2>
+<p>This function is used to individuate if there are points (x,y) that fall within the polygon of harbours, and, eventually, it indicates which are these points.</p>
 <p><br></p>
 <pre class="r"><code>find_inport(data, ports)</code></pre>
 <p><br></p>
 <ul>
-<li>data: my data</li>
-<li>ports:</li>
+<li>data: raw AIS data</li>
+<li>ports: ports layer</li>
 </ul>
 </div>
 <div id="find-the-closest-harbour" class="section level2">
@@ -402,87 +463,84 @@ div.tocify {
 <li>ports: is the shapefile with harbors locations</li>
 </ul>
 </div>
+<div id="find-the-closest-harbour-recovery" class="section level2">
+<h2>Find the closest harbour recovery</h2>
+<p>This function is used to assign the beginning and ending ports of fishing tripsduring the recovery step of the create_fishing_trip function. This function individuate if there are harbours closest then 50 km with respect to the first or last position of the trip. If there are harbours, the function selects the closest five, then it checks if the reference_port is included in the closest five. If yes, it assign this harbour, if no, it assign the closest harbour: <br></p>
+<pre class="r"><code>closest_port_recovery(longitude , latitude, ports, reference_port)</code></pre>
+<p><br></p>
+<ul>
+<li>longitude-latitude: are the coordinates of the first or last point of the fishing trip</li>
+<li>ports: ports layer</li>
+<li>reference_port: is the harbour at the other extremity of the fishing trip. Example: if longitude and latitude indicates the first point of the trip, reference_port will be the port of arrival.</li>
+</ul>
+</div>
+<div id="find-the-overlapping-harbour" class="section level2">
+<h2>Find the overlapping harbour</h2>
+<p>This function is used to assign the beginning and ending ports of fishing trips, by the means of a spatial intersection between coordinates and the ports buffer layer. If the intersection is successful, it return the name of the identified harbour:</p>
+<p><br></p>
+<pre class="r"><code>get_port(longitude , latitude, ports_buffer, ports)</code></pre>
+<p><br></p>
+<ul>
+<li>longitude-latitude: are the coordinates of the first or last point of the fishing trip</li>
+<li>ports_buffer: 1km buffer of the ports layer</li>
+<li>ports: ports layer</li>
+</ul>
+</div>
+<div id="identify-transmission-gaps" class="section level2">
+<h2>Identify transmission gaps</h2>
+<p>This function recycles the data gaps from the function “core_function” and retrieves tracks corresponding to gaps in the AIS signal:</p>
+<p><br></p>
+<pre class="r"><code>identify_trasmission_gaps(data, coord_sys)</code></pre>
+<p><br></p>
+<ul>
+<li>data: results from “classification wrapper” function, consisting in raw AIS data labelled with the k-means results</li>
+<li>coord_sys: coordinates system (e.g.: WGS 84)</li>
+</ul>
+</div>
 <div id="import-parameters" class="section level2">
 <h2>Import parameters</h2>
+<p>The import_parameters allows to load the required parameters of several internal functions.</p>
 <p><br></p>
 <pre class="r"><code>import_parameters(parameters, centroids)</code></pre>
 <p><br></p>
 <ul>
-<li><p>parameters: an external csv file with the following parameters:</p></li>
-<li><p>centroids: an external csv file containing the set of centroids values to test using the kmeans method in the classification alghorithm</p></li>
+<li>parameters: an external csv file with the following parameters:</li>
+<li>centroids: an external csv file containing the set of centroids values to test using the kmeans method in the classification alghorithm</li>
 </ul>
 </div>
-<div id="classfied-speed" class="section level2">
-<h2>Classfied speed</h2>
+<div id="inspect-coastal-ban-zone" class="section level2">
+<h2>Inspect coastal ban zone</h2>
+<p>This function is used to individuate if the last point of a fishing trip (n) and the first point of the subsequent fishing trip (n+1), lies within the coastal ban zone. It returns the number of points individuated:</p>
 <p><br></p>
-<pre class="r"><code>classify_speed(data, gear, xcentroids, pars)</code></pre>
+<pre class="r"><code>incoastal_ban_zone(longitude_start , latitude_start , longitude_end , latitude_end, coastline)</code></pre>
 <p><br></p>
 <ul>
-<li>data:</li>
-<li>gear</li>
-<li>xcentroids</li>
-<li>pars</li>
+<li>longitude-latitude_start: are the coordinates of the first point of the fishing trip n+1</li>
+<li>longitude-latitude_end: are the coordinates of the last point of the fishing trip n</li>
+<li>coastal_ban_zone: coastal ban zone layer</li>
 </ul>
 </div>
-<div id="make-segment" class="section level2">
-<h2>Make segment</h2>
+<div id="make-tracks-lite" class="section level2">
+<h2>Make tracks lite</h2>
+<p>This function assigns unique ids to subsequent points if they fall within the same cluster inherited from k-means, thus creating groups of homogeneous points, corresponding to different phases of the activity (mainly steaming and fishing). Then it removes the first and the last steaming tracks.</p>
 <p><br></p>
 <pre class="r"><code>make_segment_lite(data, gear)</code></pre>
 <p><br></p>
 <ul>
-<li>data:</li>
-<li>gear:</li>
-</ul>
-</div>
-<div id="assign-ping-to-session" class="section level2">
-<h2>Assign ping to session</h2>
-<p><br></p>
-<pre class="r"><code>assign_session(data, session_table)</code></pre>
-<p><br></p>
-<ul>
-<li>data:</li>
-<li>session_table:</li>
+<li>data: ais data with a column indicating the cluster identified by the k-means for each point.</li>
+<li>gear: target fishing gear. Accepted values are OTB1, OTB2, TBB, PTM, PS</li>
 </ul>
 </div>
 <div id="search-cluster" class="section level2">
 <h2>Search cluster</h2>
+<p>This function applies the dbscan algorithm to identify spatial clusters in the input data.</p>
 <p><br></p>
 <pre class="r"><code>search_cluster(data, pars, gear)</code></pre>
 <p><br></p>
 <ul>
-<li>data:</li>
-<li>pars:</li>
-<li>gear:</li>
-</ul>
-</div>
-<div id="check-cluster" class="section level2">
-<h2>Check cluster</h2>
-<p><br></p>
-<pre class="r"><code>check_cluster(data, gear, threshold, low_speed)</code></pre>
-<p><br></p>
-<ul>
-<li>data:</li>
-<li>gear:</li>
-<li>threshold:</li>
-<li>low_speed:</li>
-</ul>
-</div>
-<div id="data-partition" class="section level2">
-<h2>Data partition</h2>
-<p>This is the function used to split a validated dataset in validation, training and test subset. The input dataset is represented by a validate <br></p>
-<pre class="r"><code>data_partitioning(data)</code></pre>
-<p><br></p>
-<ul>
-<li>data: it is an input dataframe containing the ID of the vessel, the session and the validated gear</li>
-</ul>
-</div>
-<div id="data-partition-1" class="section level2">
-<h2>Data partition</h2>
-<p>This is the function used to split a validated dataset in validation, training and test subset. The input dataset is represented by a validate <br></p>
-<pre class="r"><code>identify_trasmission_gaps(data, coord_sys)</code></pre>
-<p><br></p>
-<ul>
-<li>data: it is an input dataframe containing the ID of the vessel, the session and the validated gear</li>
+<li>data: raw ais data</li>
+<li>pars: object storing the parameter file. Different parameters are provided for different fishing gears.</li>
+<li>gear: target fishing gear. Accepted values are OTB1, OTB2, PTM, TBB.</li>
 </ul>
 </div>
 
