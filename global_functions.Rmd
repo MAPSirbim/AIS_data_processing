@@ -1,5 +1,5 @@
 ---
-title: "Internal Function"
+title: "Internal Functions"
 output:
   html_document:
     toc: true
@@ -101,6 +101,35 @@ classify_speed(data, gear, xcentroids, pars)
 * xcentroids: object containing the centroid list inherited from the input .csv file.
 * pars: object storing the parameter file.
 
+## Core function
+the core function process one fishing trip at time. It search for spatial clusters of points by appliying a dbscan algorithm and then it classify the fishing data basing on the speed by applying a kmeans algorithm. Information on the spatial cluster and on the speed classification are evaluated within a set of rules designed to identify a range of fishing gears. 
+<br>
+
+```{r funcdef501, echo = F, eval = F}
+core_function(trip_data, pars)
+```
+
+```{r funcdef501, eval = F}
+```
+<br>
+
+* trip_data: 
+* pars: object storing the parameter file.
+
+
+## Data partitioning for model
+Add text. 
+<br>
+
+```{r funcdef502, echo = F, eval = F}
+data_partition(data)
+```
+
+```{r funcdef502, eval = F}
+```
+<br>
+
+* data:
 
 ## Find in harbour
 This function is used to individuate if there are points (x,y) that fall within the polygon of harbours, and, eventually, it indicates which are these points.
