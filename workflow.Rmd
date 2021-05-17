@@ -13,7 +13,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Overview
+# Summary
 
 This release note aims to describe the AIS processing method hosted in the repository (https://github.com/MAPSirbim/AIS_data_processing/tree/v1.0.1), also available at 10.5281/zenodo.4757505. The processing workflow was developed on historical annotated data of the Adriatic Sea (Mediterannean Sea) and aims to (i) identify individual fishing trips and (ii) classify them on a monthly basis according to 5 predefined gear classes: bottom otter trawl (OTB), pelagic pair trawl (PTM), beam trawl (TBB), purse seine (PS), and “other” fishing (OTHER,  including dredges and passive gears). 
 In this repository we also release:
@@ -68,22 +68,78 @@ head(data)
 The create_fishing_trip function identifies vessel-specific fishing trips for each vessel, as sequences of points broadcasted by a vessel, from the time it leaves the port until it returns. To run the function, four datasets are required to complete the entire workflow: the sequence of AIS positions of a vessel, the coastal_ban_zone layer, and 2 layers related to the ports.
 As AIS transmission gaps (loss of signal of at least 30 minutes) can hamper the identification of the departure and arrival ports, a recovery function was internally applied to join consecutive trips where the departure/arrival port was too far to be assigned. In order to join consecutive trips the function overlays the ending/starting points with the coastal_ban_zone, compares ids between consecutive ending/starting points, compares timestamps and forces a starting and ending port for each trip. In particular, fishing trips are joined and the nearest port is assigned if ending and starting points are consecutive, have a temporal distance shorter than 24 h and at least one is outside the coastal_ban_zone. At the end of the recovery process, for trips that still miss departure and/or arrival ports, the internal function closest_port_recovery is used to force port assignment under other conditions. 
 
+```{r funcdef00, echo = F, eval = F}
+dat_session= create_fishing_trip(data, 
+                                 ports,  
+                                 ports_buffer, 
+                                 coastal_ban_zone, 
+                                 results_table = F)
+```
+
+```{r funcdef00, eval = F}
+```
+<br>
 
 
 
+* data: AIS positions
+* ports: port locations (.shp) 
+* ports_buffer: 1 km buffer, created around the input ports (.shp) 
+* coastal_ban_zone: zone where the use of towed gears is prohibited (.shp) 
+
+<p> The create_fishing_trip function returns the fishing trip table, listing all the trips performed by the vessel and providing information on: departure/arrival timestamps and departure/arrival port names.
 
 
+The fishing trip table created above is required to assign the fishing trip id to the AIS signals of the vessels. However, the  fishing trip table can be useful to store summary information of the fishing trips of a vessel and used to recall records belonging to single trips by using the starting and ending timestamp. In addition, it may be linked with the port layer where information regarding the country and GSA is stored.
+
+<p> The function assign_trip assigns to each AIS position the trip to which it belongs.
+
+```{r assign_session, echo = F, eval = F}
+dat_with_trip = assign_trip(data, 
+                               trip_table)
+head(dat_with_trip)
+```
+
+```{r assign_session, eval = F}
+```
+<br>
+
+* data: AIS positions
+* trip_table: dataframe containing the list of fishing trips and the relative timestamp information (output of the create_fishing_trip function)
+
+<p> The assign_trip function returns the AIS data indexed with trip information
 
 
+## Fishing trip classification and gear assignment
+The classification_wrapper function applies a cascade of classification algorithms on each fishing trip, using as input the AIS positions with their assigned trip (dat_with_trip) and the specific parameters needed for each classification algorithm (pars). The classification of each fishing trip is done by two internal functions (classify_speed and search_cluster), whose results are used to label each fishing point according to the speed clusters (in the case of towed gears) or spatial clusters (in the case of PS). 
 
+<p> In particular, a k-means algorithms is performed on trip-specific speed values using 5 different sets of centroids that were a priori defined by experts for each fishing gear type (two for OTB, PTM, TBB and PS), the centroids will represent the different speed profiles of fishing behavioural states. The dbscan algorithm is applied on the latitude and longitude data, with two different sets of neighborhood radii (ε) and a number of minimum points in the ε region. The proportions of points falling within each of the identified clusters are used to label the fishing trip as positive or negative to each of the investigated gears.
 
+```{r dat_classification, echo = F, eval = F}
+dat_classified=classification_wrapper(vessel_data, 
+                                      pars, 
+                                      write.output = F, 
+                                      output.name=F)
+```
 
+```{r dat_classification, eval = F}
+```
+<br>
 
+* dat_with_trip: raw AIS data with an additional column indexing the corresponding fishing trip
+* pars: table of parameters required by the classification functions;
+* write.output: logical argument to store the data needed to train the Random Forest model. 
+* output.name: logical argument, specify the name to be given to the output file. 
 
+<p> The dat_classified output contains a list with two objects:
 
+* "data_labelled": returns the input data with an additional column for each classification algorithm, indicating the speed cluster assigned by the k-means (in the case of towed gears: otb1, otb2, tbb, ptm) or the spatial cluster assigned by the dbscan (in the case of ps). Clusters 1-2 refer to data gaps or noise, while clusters 3-6 indicate different fishing behavioural states (e.g., hauling,  searching, steaming). Besides, a column specifying the month in which the trip started is added.
 
+* "classification_result": contains the binary results of the classification algorithms for each fishing trip and each classification algorithm (otb1, otb2, ptm, tbb, ps);  gaps is the percentage (in respect to the duration of the trip) of AIS shutdowns; n_ping is the number of AIS signals belonging to each trip, and start_month is the month in which the fishing trip starts.
 
+<p> In order to accommodate the intra-month variability of the predicted gears, fishing gears are finally reassigned to trips on a monthly basis appling a Random Forest model (RF) using the Random Forest library available in R (Liaw and Viener, 2002). The classification unit of the RF is the set of fishing trips performed in a month by a vessel. 
 
+<p> Before training the RF, 524 known vessels (8463 units) are randomly stratified while splitting up into 2 datasets (90:10, dataset 1 and dataset 2, respectively) according to the number of vessels by gear class. The dataset 1 (7572 units) is further splitted in 70:30 equally portioning among the 5 gears (Training and Validation, respectively) to allow model tuning. The dataset 2 (891 units) is used as a test to evaluate classification performance and transferability of the trained RF. 
 
 
 
