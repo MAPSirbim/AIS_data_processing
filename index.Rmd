@@ -7,7 +7,6 @@ Overview
 ================
 This R code aims to analyze Automatic Identification System (AIS) data, 
 and is an improvement of the method described in Galdelli et al. ([2019](#ref-Galdelli2018))
-
 <p>
 
 The processing workflow was developed on historical annotated data of the
@@ -16,7 +15,6 @@ The processing workflow was developed on historical annotated data of the
  bottom otter trawl (OTB), pelagic pair trawl (PTM), beam trawl (TBB), 
  purse seine (PS), and "other" fishing (OTHER, including dredges and 
  passive gears).
-
 <p>
 
 In this repository we release also:
@@ -26,7 +24,6 @@ In this repository we release also:
   classify fishing trips (.csv) and the trained Random Forest model (.rds) used to finally 
   assign the gear on a monthly basis and finalized to work in the Adriatic Sea
   - additional spatial layers required by the data processing (.shp).
-
 <p>
 
 A detailed description of the methodology is provided in the [Release notes](https://github.com/MAPSirbim/AIS_data_processing/tree/main/documents). <br>
