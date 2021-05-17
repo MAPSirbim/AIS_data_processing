@@ -2,8 +2,6 @@ name: "release_note"
 navbar:
   title: "Release Note"
   left:
-    - text: "Workflow"
-      href: workflow.html
     - text: "Functions"
       href: global_functions.html
 output_dir: "docs"

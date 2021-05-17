@@ -11,31 +11,6 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-install.missing.packages = T
-source("R/global_functions.R", local = knitr::knit_global())
-dirmaps="maps" # path of the maps directory
-file_parameters="data/parameters.csv" # import parameter table
-file_centroids="data/centroids.csv" # import centroids 
-outdir="results"
-wgs="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0" # Insert your coordinates system
-install.missing.packages=T # set to TRUE if want to allow automatic installation of missing packages.
-write.output=T # set to TRUE to require table with results in output file 
-ports<-read_sf(file.path(dirmaps, "med_harb_gsa")) # import list of ports
-ports_buffer<-st_buffer(ports, 0.001) # create a buffer
-st_crs(ports_buffer)=wgs # set crs
-coastal_ban_zone=read_sf(file.path(dirmaps, "coastal_ban_zone")) # import managment depth layer
-st_crs(coastal_ban_zone)=wgs # set crs
-grid<-read_sf(file.path(dirmaps, "grid01degrees")) # import a grid
-grid$grid_id=seq(1:nrow(grid)) # create cell grid id
-st_crs(grid)=wgs # set crs
-
-## the following lines load the parameters required in the next analyses
-centroids=inport_parameters(file.path(file_parameters), file.path(file_centroids))[[2]]
-pars=inport_parameters(file.path(file_parameters), file.path(file_centroids))[[1]]
-
-## download baselayer from natural earth
-worldmap <- rnaturalearth::ne_countries(scale='medium', type='map_units',   returnclass='sf') # import the map of land (need rnaturalearth library)
-worldmap <- worldmap[,c("name_long", "geometry")]
 ```
 
 # Overview
