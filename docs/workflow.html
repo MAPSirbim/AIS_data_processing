@@ -9,10 +9,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="JP" />
 
 
-<title>workflow</title>
+<title>Workflow</title>
 
 <script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
@@ -21,6 +20,9 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -260,6 +262,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -267,6 +332,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -301,35 +376,159 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">workflow</h1>
-<h4 class="author">JP</h4>
-<h4 class="date">17/5/2021</h4>
+<h1 class="title toc-ignore">Workflow</h1>
 
 </div>
 
 
-<div id="r-markdown" class="section level2">
-<h2>R Markdown</h2>
-<p>This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <a href="http://rmarkdown.rstudio.com" class="uri">http://rmarkdown.rstudio.com</a>.</p>
-<p>When you click the <strong>Knit</strong> button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</p>
-<pre class="r"><code>summary(cars)</code></pre>
-<pre><code>##      speed           dist       
-##  Min.   : 4.0   Min.   :  2.00  
-##  1st Qu.:12.0   1st Qu.: 26.00  
-##  Median :15.0   Median : 36.00  
-##  Mean   :15.4   Mean   : 42.98  
-##  3rd Qu.:19.0   3rd Qu.: 56.00  
-##  Max.   :25.0   Max.   :120.00</code></pre>
+<div id="overview" class="section level1">
+<h1>Overview</h1>
+<p>This release note aims to describe the AIS processing method hosted in the repository (<a href="https://github.com/MAPSirbim/AIS_data_processing/tree/v1.0.1" class="uri">https://github.com/MAPSirbim/AIS_data_processing/tree/v1.0.1</a>), also available at 10.5281/zenodo.4757505. The processing workflow was developed on historical annotated data of the Adriatic Sea (Mediterannean Sea) and aims to (i) identify individual fishing trips and (ii) classify them on a monthly basis according to 5 predefined gear classes: bottom otter trawl (OTB), pelagic pair trawl (PTM), beam trawl (TBB), purse seine (PS), and “other” fishing (OTHER, including dredges and passive gears). In this repository we also release:</p>
+<ul>
+<li><p>a small subset of AIS signals broadcasted by a few vessels retrieved from the validated dataset (.csv);</p></li>
+<li><p>all the parameters required to process the data, such as the input parameters needed to classify fishing trips (.csv) and the trained Random Forest model (.rds) used to finally assign the gear on a monthly basis and finalized to work in the Adriatic Sea;</p></li>
+<li><p>additional spatial layers required by the data processing (.shp).</p></li>
+</ul>
+<p>
+<p>A summary description of these data is provided in the Release data information section. <br></p>
 </div>
-<div id="including-plots" class="section level2">
-<h2>Including Plots</h2>
-<p>You can also embed plots, for example:</p>
-<p><img src="workflow_files/figure-html/pressure-1.png" width="672" /></p>
-<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
+<div id="input-data" class="section level1">
+<h1>Input data</h1>
+<p>Input data required to start the workflow are described below. <br></p>
+<div id="vessel-data" class="section level2">
+<h2>Vessel data</h2>
+<p>The workflow was originally created to be applied to AIS data. However, it can be adapted to every positioning data type having the following structure:</p>
+<pre class="r"><code>data = read.csv(&quot;data/datatest.csv&quot;)
+head(data)</code></pre>
+<pre><code>##   MMSI            datetime longitude latitude speed
+## 1    1 2015-04-01 17:47:53   13.5027  43.6154   5.3
+## 2    1 2015-04-01 17:52:54   13.4914  43.6291  10.2
+## 3    1 2015-04-01 17:57:55   13.4914  43.6291  10.2
+## 4    1 2015-04-01 18:02:55   13.4952  43.6485  11.0
+## 5    1 2015-04-01 18:07:55   13.5068  43.6643  10.3
+## 6    1 2015-04-01 18:12:55   13.5175  43.6790   9.5</code></pre>
+<p>Where:</p>
+<ul>
+<li>MMSI (Maritime Mobile Service Identity): is the unique identifier in official AIS data. For privacy purposes, the MMSI was converted into a fake id (e.g., “1”)</li>
+<li>date and time: timestamp (in the format of Universal Time Coordinate) of broadcasted positions</li>
+<li>latitude and longitude: coordinates of the broadcasted positions (WGS 84)</li>
+<li>speed: instantaneous speed over ground (SOG) of the vessel (kn) <br></li>
+</ul>
+</div>
+<div id="spatial-layers" class="section level2">
+<h2>Spatial layers</h2>
+<p>Three vector layers are required to perform the functions foreseen by the workflow:</p>
+<ul>
+<li>ports (.shp). Port locations were stored as point buffers or manually designed, to best include approach channels to ports, and described by following attributes: name, country and statistical Area (for our scope we use GFCM Geographical Sub-Area; GSA).</li>
+<li>coastal_ban_zone (.shp). Zone where the use of towed gears is prohibited, as defined by Article 13(1) of Regulation (EC) No 1967/2006. It is bounded by 3 nautical miles of the coast or by the 50 m isobath where that depth is reached at a shorter distance from the coast.</li>
+<li>grid (.shp). It is the spatial grid used to aggregate fishing effort and estimate fishing hours. The grid provided in this repository is available here.</li>
+</ul>
+<p>
+<p>These layers cover the Mediterranean basin and should be manually recreated in order to reproduce the processing workflow in different areas. <br></p>
+</div>
+</div>
+<div id="processing" class="section level1">
+<h1>Processing</h1>
+<p>The proposed workflow is hereafter applied on a single vessel although it can be iterated on multiple vessels.</p>
+<pre class="r"><code>vessel = 2
+data = data[which(data$MMSI == vessel),]
+head(data)</code></pre>
+<pre><code>##      MMSI            datetime longitude latitude speed
+## 8858    2 2018-06-03 21:41:39   13.5002  43.6224   9.0
+## 8859    2 2018-06-03 21:48:44   13.4905  43.6308   5.6
+## 8860    2 2018-06-03 21:53:48   13.4836  43.6385   9.0
+## 8861    2 2018-06-03 21:56:49   13.4768  43.6463  11.1
+## 8862    2 2018-06-03 21:59:51   13.4693  43.6544  11.1
+## 8863    2 2018-06-03 22:05:55   13.4540  43.6698  11.1</code></pre>
+<div id="fishing-trip" class="section level2">
+<h2>Fishing trip</h2>
+<p>The create_fishing_trip function identifies vessel-specific fishing trips for each vessel, as sequences of points broadcasted by a vessel, from the time it leaves the port until it returns. To run the function, four datasets are required to complete the entire workflow: the sequence of AIS positions of a vessel, the coastal_ban_zone layer, and 2 layers related to the ports. As AIS transmission gaps (loss of signal of at least 30 minutes) can hamper the identification of the departure and arrival ports, a recovery function was internally applied to join consecutive trips where the departure/arrival port was too far to be assigned. In order to join consecutive trips the function overlays the ending/starting points with the coastal_ban_zone, compares ids between consecutive ending/starting points, compares timestamps and forces a starting and ending port for each trip. In particular, fishing trips are joined and the nearest port is assigned if ending and starting points are consecutive, have a temporal distance shorter than 24 h and at least one is outside the coastal_ban_zone. At the end of the recovery process, for trips that still miss departure and/or arrival ports, the internal function closest_port_recovery is used to force port assignment under other conditions.</p>
+<pre class="r"><code>dat_session= create_fishing_trip(data, 
+                                 ports,  
+                                 ports_buffer, 
+                                 coastal_ban_zone)</code></pre>
+<pre><code>## ==============================</code></pre>
+<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries
+
+## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries</code></pre>
+<pre><code>## ============</code></pre>
+<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries
+
+## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries</code></pre>
+<pre><code>## =</code></pre>
+<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries
+
+## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries</code></pre>
+<pre><code>## ========</code></pre>
+<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries
+
+## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries</code></pre>
+<pre><code>## ==============</code></pre>
+<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries
+
+## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries</code></pre>
+<pre><code>## ========</code></pre>
+<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries
+
+## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries</code></pre>
+<pre><code>## ==</code></pre>
+<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries
+
+## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries</code></pre>
+<pre><code>## =</code></pre>
+<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries
+
+## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries</code></pre>
+<pre><code>## =</code></pre>
+<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries
+
+## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries</code></pre>
+<pre><code>## ==</code></pre>
+<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries
+
+## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries</code></pre>
+<pre><code>## =
+##  trip create complete!!!
+##  Recovery trip
+##  Recovery harbours=====================================================================</code></pre>
+<pre><code>## Warning in `[&lt;-.factor`(`*tmp*`, iseq, value = &quot;Fano&quot;): invalid factor level, NA
+## generated</code></pre>
+<pre><code>## ===========....complete!!!</code></pre>
+<pre class="r"><code>head(dat_session)</code></pre>
+<pre><code>##   MMSI trip     start_timestamp       end_timestamp departure arrival
+## 1    2    1 2018-06-10 21:28:44 2018-06-12 00:04:23    Ancona  Ancona
+## 2    2    2 2018-06-12 00:16:31 2018-06-14 06:31:33    Ancona  Ancona
+## 4    2    4 2018-06-17 21:43:24 2018-06-19 00:07:46    Ancona  Ancona
+## 5    2    5 2018-06-19 00:44:10 2018-06-21 05:04:30    Ancona  Ancona
+## 6    2    6 2018-06-24 21:36:51 2018-06-26 00:00:42    Ancona  Ancona
+## 7    2    7 2018-06-26 00:12:50 2018-06-27 00:23:02    Ancona  Ancona</code></pre>
+</div>
 </div>
 
 
 
+</div>
+</div>
 
 </div>
 
@@ -362,6 +561,32 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

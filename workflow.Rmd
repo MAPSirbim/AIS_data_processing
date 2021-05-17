@@ -9,3 +9,113 @@ output:
     toc_depth: 3
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+install.missing.packages = T
+source("R/global_functions.R", local = knitr::knit_global())
+dirmaps="maps" # path of the maps directory
+file_parameters="data/parameters.csv" # import parameter table
+file_centroids="data/centroids.csv" # import centroids 
+outdir="results"
+wgs="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0" # Insert your coordinates system
+install.missing.packages=T # set to TRUE if want to allow automatic installation of missing packages.
+write.output=T # set to TRUE to require table with results in output file 
+ports<-read_sf(file.path(dirmaps, "med_harb_gsa")) # import list of ports
+ports_buffer<-st_buffer(ports, 0.001) # create a buffer
+st_crs(ports_buffer)=wgs # set crs
+coastal_ban_zone=read_sf(file.path(dirmaps, "coastal_ban_zone")) # import managment depth layer
+st_crs(coastal_ban_zone)=wgs # set crs
+grid<-read_sf(file.path(dirmaps, "grid01degrees")) # import a grid
+grid$grid_id=seq(1:nrow(grid)) # create cell grid id
+st_crs(grid)=wgs # set crs
+
+## the following lines load the parameters required in the next analyses
+centroids=inport_parameters(file.path(file_parameters), file.path(file_centroids))[[2]]
+pars=inport_parameters(file.path(file_parameters), file.path(file_centroids))[[1]]
+
+## download baselayer from natural earth
+worldmap <- rnaturalearth::ne_countries(scale='medium', type='map_units',   returnclass='sf') # import the map of land (need rnaturalearth library)
+worldmap <- worldmap[,c("name_long", "geometry")]
+```
+
+# Overview
+
+This release note aims to describe the AIS processing method hosted in the repository (https://github.com/MAPSirbim/AIS_data_processing/tree/v1.0.1), also available at 10.5281/zenodo.4757505. The processing workflow was developed on historical annotated data of the Adriatic Sea (Mediterannean Sea) and aims to (i) identify individual fishing trips and (ii) classify them on a monthly basis according to 5 predefined gear classes: bottom otter trawl (OTB), pelagic pair trawl (PTM), beam trawl (TBB), purse seine (PS), and “other” fishing (OTHER,  including dredges and passive gears). 
+In this repository we also release:
+
+* a small subset of AIS signals broadcasted by a few vessels retrieved from the validated dataset (.csv);
+
+* all the parameters required to process the data, such as  the input parameters needed to classify fishing trips (.csv) and the trained Random Forest model (.rds) used to finally assign the gear on a monthly basis and finalized to work in the Adriatic Sea; 
+* additional spatial layers required by the data processing (.shp).
+
+<p> A summary description of these data is provided in the Release data information section. 
+<br>
+
+# Input data
+Input data required to start the workflow are described below.
+<br> 
+
+## Vessel data
+The workflow was originally created to be applied to AIS data. However, it can be adapted to every positioning data type having the following structure: 
+
+```{r}
+data = read.csv("data/datatest.csv")
+head(data)
+```
+Where:
+
+* MMSI (Maritime Mobile Service Identity): is the unique identifier in official AIS data. For privacy purposes, the MMSI was converted into a fake id (e.g., “1”) 
+* date and time: timestamp (in the format of Universal Time Coordinate) of broadcasted positions
+* latitude and longitude: coordinates of the broadcasted positions (WGS 84)
+* speed: instantaneous speed over ground (SOG) of the vessel (kn)
+<br>
+
+## Spatial layers
+Three vector layers are required to perform the functions foreseen by the workflow:
+
+* ports (.shp).  Port locations were stored as point buffers or manually designed, to best include approach channels to ports, and described by following attributes: name, country and statistical Area (for our scope we use GFCM Geographical Sub-Area; GSA).
+* coastal_ban_zone (.shp). Zone where the use of towed gears is prohibited, as defined by Article 13(1) of Regulation (EC) No 1967/2006. It is bounded by  3 nautical miles of the coast or by the 50 m isobath where that depth is reached at a shorter distance from the coast.
+* grid (.shp). It is the spatial grid used to aggregate fishing effort and estimate fishing hours. The grid provided in this repository is available here.
+
+<p> These layers cover the Mediterranean basin and should be manually recreated in order to reproduce the processing workflow in different areas.
+<br>
+
+# Processing
+The proposed workflow is hereafter applied on a single vessel although it can be iterated on multiple vessels.
+
+```{r}
+vessel = 2
+data = data[which(data$MMSI == vessel),]
+head(data)
+```
+
+## Fishing trip
+The create_fishing_trip function identifies vessel-specific fishing trips for each vessel, as sequences of points broadcasted by a vessel, from the time it leaves the port until it returns. To run the function, four datasets are required to complete the entire workflow: the sequence of AIS positions of a vessel, the coastal_ban_zone layer, and 2 layers related to the ports.
+As AIS transmission gaps (loss of signal of at least 30 minutes) can hamper the identification of the departure and arrival ports, a recovery function was internally applied to join consecutive trips where the departure/arrival port was too far to be assigned. In order to join consecutive trips the function overlays the ending/starting points with the coastal_ban_zone, compares ids between consecutive ending/starting points, compares timestamps and forces a starting and ending port for each trip. In particular, fishing trips are joined and the nearest port is assigned if ending and starting points are consecutive, have a temporal distance shorter than 24 h and at least one is outside the coastal_ban_zone. At the end of the recovery process, for trips that still miss departure and/or arrival ports, the internal function closest_port_recovery is used to force port assignment under other conditions. 
+
+```{r, warnings = FALSE, message = FALSE}
+dat_session= create_fishing_trip(data, 
+                                 ports,  
+                                 ports_buffer, 
+                                 coastal_ban_zone)
+head(dat_session)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
