@@ -27,7 +27,7 @@ In this repository we release also:
 
 <p>
 
-A detailed description of the methodology is provided in the [Release notes](https://github.com/MAPSirbim/AIS_data_processing/tree/main/docs). <br>
+A detailed description of the methodology is provided in the [Release notes](https://github.com/MAPSirbim/AIS_data_processing/tree/main/documents). <br>
 
 
 
