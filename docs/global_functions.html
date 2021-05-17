@@ -11,7 +11,7 @@
 
 
 
-<title>Internal Function</title>
+<title>Internal Functions</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -376,7 +376,7 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Internal Function</h1>
+<h1 class="title toc-ignore">Internal Functions</h1>
 
 </div>
 
@@ -440,6 +440,25 @@ div.tocify {
 <li>gear: target gear. Accepted values are OTB1, OTB2, PTM, TBB, PS.</li>
 <li>xcentroids: object containing the centroid list inherited from the input .csv file.</li>
 <li>pars: object storing the parameter file.</li>
+</ul>
+</div>
+<div id="core-function" class="section level2">
+<h2>Core function</h2>
+<p>the core function process one fishing trip at time. It search for spatial clusters of points by appliying a dbscan algorithm and then it classify the fishing data basing on the speed by applying a kmeans algorithm. Information on the spatial cluster and on the speed classification are evaluated within a set of rules designed to identify a range of fishing gears. <br></p>
+<pre class="r"><code>core_function(trip_data, pars)</code></pre>
+<p><br></p>
+<ul>
+<li>trip_data:</li>
+<li>pars: object storing the parameter file.</li>
+</ul>
+</div>
+<div id="data-partitioning-for-model" class="section level2">
+<h2>Data partitioning for model</h2>
+<p>Add text. <br></p>
+<pre class="r"><code>data_partition(data)</code></pre>
+<p><br></p>
+<ul>
+<li>data:</li>
 </ul>
 </div>
 <div id="find-in-harbour" class="section level2">
