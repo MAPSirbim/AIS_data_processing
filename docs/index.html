@@ -13,13 +13,21 @@
 
 <title>AIS processing workflow</title>
 
-<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -34,11 +42,6 @@
     </style>
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
 <script type="text/javascript">
 if (window.hljs) {
   hljs.configure({languages: []});
@@ -51,55 +54,7 @@ if (window.hljs) {
 
 
 
-<style type="text/css">
-h1 {
-  font-size: 34px;
-}
-h1.title {
-  font-size: 38px;
-}
-h2 {
-  font-size: 30px;
-}
-h3 {
-  font-size: 24px;
-}
-h4 {
-  font-size: 18px;
-}
-h5 {
-  font-size: 16px;
-}
-h6 {
-  font-size: 12px;
-}
-.table th:not([align]) {
-  text-align: left;
-}
-</style>
 
-<style type="text/css">
-/* for pandoc --citeproc since 2.11 */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-}
-.hanging div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}
-</style>
 
 
 
@@ -109,10 +64,6 @@ div.csl-indent {
   max-width: 940px;
   margin-left: auto;
   margin-right: auto;
-}
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
 }
 img {
   max-width:100%;
@@ -129,40 +80,13 @@ button.code-folding-btn:focus {
 summary {
   display: list-item;
 }
+pre code {
+  padding: 0;
+}
 </style>
 
 
 <style type="text/css">
-/* padding for bootstrap navbar */
-body {
-  padding-top: 51px;
-  padding-bottom: 40px;
-}
-/* offset scroll position for anchor links (for fixed navbar)  */
-.section h1 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h2 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h3 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h4 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h5 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h6 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
 .dropdown-submenu {
   position: relative;
 }
@@ -190,7 +114,7 @@ body {
   margin-right: -10px;
 }
 .dropdown-submenu:hover>a:after {
-  border-left-color: #ffffff;
+  border-left-color: #adb5bd;
 }
 .dropdown-submenu.pull-left {
   float: none;
@@ -202,7 +126,7 @@ body {
 }
 </style>
 
-<script>
+<script type="text/javascript">
 // manage active state of menu based on current page
 $(document).ready(function () {
   // active menu anchor
@@ -213,10 +137,23 @@ $(document).ready(function () {
   var menuAnchor = $('a[href="' + href + '"]');
 
   // mark it active
-  menuAnchor.parent().addClass('active');
+  menuAnchor.tab('show');
 
   // if it's got a parent navbar menu mark it active as well
   menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
 });
 </script>
 
@@ -228,7 +165,6 @@ $(document).ready(function () {
   max-height: 500px;
   min-height: 44px;
   overflow-y: auto;
-  background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
@@ -318,7 +254,7 @@ $(document).ready(function () {
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-<div class="fluid-row" id="header">
+<div id="header">
 
 
 
@@ -329,9 +265,9 @@ $(document).ready(function () {
 
 <div id="overview" class="section level1">
 <h1>Overview</h1>
-This R code aims to analyze Automatic Identification System (AIS) data, and is an improvement of the method described in Galdelli et al. (<a href="#ref-Galdelli2018">2019</a>)
+This R code aims to analyze Automatic Identification System (AIS) data, and is an improvement of the method described in Galdelli et al. (<a href="#ref-Galdelli2018">2019</a>)
 <p>
-The processing workflow was developed on historical annotated data of the Adriatic Sea and aims to (i) identify individual fishing trips and (ii) classify them on a monthly basis according to 5 predefined gear classes: bottom otter trawl (OTB), pelagic pair trawl (PTM), beam trawl (TBB), purse seine (PS), and “other” fishing (OTHER, including dredges and passive gears).
+The processing workflow was developed on historical annotated data of the Adriatic Sea and aims to (i) identify individual fishing trips and (ii) classify them on a monthly basis according to 5 predefined gear classes: bottom otter trawl (OTB), pelagic pair trawl (PTM), beam trawl (TBB), purse seine (PS), and &quot;other&quot; fishing (OTHER, including dredges and passive gears).
 <p>
 <p>In this repository we release also:</p>
 <ul>
@@ -346,7 +282,7 @@ The processing workflow was developed on historical annotated data of the Adriat
 <h1>References</h1>
 <div id="refs" class="references">
 <div id="ref-Galdelli2019">
-<p>Galdelli, A., Mancini, A., Tassetti, A. N., Ferrà Vega, C., Armelloni, E., Scarcella, G., Fabi, G., et al. 2019. “A Cloud Computing Architecture to Map Trawling Activities Using Positioning Data.” In Volume 9: 15th IEEE/ASME International Conference on Mechatronic and Embedded Systems and Applications. American Society of Mechanical Engineers. <a href="https://asmedigitalcollection.asme.org/IDETC-CIE/proceedings/IDETC-CIE2019/59292/Anaheim," class="uri">https://asmedigitalcollection.asme.org/IDETC-CIE/proceedings/IDETC-CIE2019/59292/Anaheim,</a> California, USA/1070321. DOI: 10.1115/DETC2019-97779</p>
+<p>Galdelli, A., Mancini, A., Tassetti, A. N., Ferrà Vega, C., Armelloni, E., Scarcella, G., Fabi, G., et al. 2019. &quot;A Cloud Computing Architecture to Map Trawling Activities Using Positioning Data.&quot; In Volume 9: 15th IEEE/ASME International Conference on Mechatronic and Embedded Systems and Applications. American Society of Mechanical Engineers. <a href="https://asmedigitalcollection.asme.org/IDETC-CIE/proceedings/IDETC-CIE2019/59292/Anaheim," class="uri">https://asmedigitalcollection.asme.org/IDETC-CIE/proceedings/IDETC-CIE2019/59292/Anaheim,</a> California, USA/1070321. DOI: 10.1115/DETC2019-97779</p>
 </div>
 </div>
 <style type="text/css">
@@ -392,7 +328,7 @@ $(document).ready(function () {
 
 $(document).ready(function () {
   $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
+    $(this).parent().toggleClass('nav-tabs-open');
   });
 });
 </script>

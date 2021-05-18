@@ -12,10 +12,65 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(openxlsx)
-library(flextable)
-library(dplyr)
 library(knitr)
 library(kableExtra)
+library(leaflet)
+library(viridis)
+library(sf)
+
+#-----------------------------------------
+# General settings ----
+#-----------------------------------------
+rm(list=ls(all=FALSE)) # clear previous variables etc
+#options(digits=3) # displays all numbers with three significant digits as default
+options(dplyr.summarise.inform=FALSE)
+options("pbapply.pb"="txt")
+#-----------------------------------------
+# Required settings, File names ----
+#-----------------------------------------
+# mydir=getwd() # Working directory where the "XXX" folder is stored
+dirmaps="maps" # path of the maps directory
+file_parameters="data/parameters.csv" # import parameter table
+file_centroids="data/centroids.csv" # import centroids 
+outdir="data_site/"
+# setwd(mydir)
+
+#-----------------------------------------
+# General settings for the analysis ----
+#-----------------------------------------
+wgs="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+install.missing.packages=T # set to TRUE if want to allow automatic installation of missing packages.
+write.output=T # set to TRUE if table with results in output file is wanted
+output.name="test"
+#-----------------------------------------
+# Load data ----
+#-----------------------------------------
+source("R/global_functions.R") # load all internal function required
+
+## the following lines load and arrange spatial layers required in the next analyses
+ports<-read_sf(file.path(dirmaps, "med_harb_gsa")) # import list of ports
+port_buf<-st_buffer(ports, 0.001) # create a buffer
+st_crs(port_buf)=wgs # set crs
+coastal_ban_zone=read_sf(file.path(dirmaps, "coastal_ban_zone")) # import managment depth layer
+st_crs(coastal_ban_zone)=wgs # set crs
+grid<-read_sf(file.path(dirmaps, "grid01degrees")) # import a grid
+grid$grid_id=seq(1:nrow(grid)) # create cell grid id
+st_crs(grid)=wgs # set crs
+
+## the following lines load the parameters required in the next analyses
+centroids=inport_parameters(file.path(file_parameters), file.path(file_centroids))[[2]]
+pars=inport_parameters(file.path(file_parameters), file.path(file_centroids))[[1]]
+
+## download baselayer fromnaturl earth
+worldmap <- rnaturalearth::ne_countries(scale='medium', type='map_units',   returnclass='sf') # import the map of land (need rnaturalearth library)
+worldmap <- worldmap[,c("name_long", "geometry")]
+
+## Application on single vessel data ####
+all_dat<-read.csv("data/datatest.csv") # load all data
+all_dat<-all_dat[,c("MMSI", "datetime", "longitude", "latitude", "speed")] # select fields of interest
+vessels <-2 # Select a vessel. In the released sample there are OTB1, TBB1, PTM1, PS1 and OTHER1. 
+dat=all_dat[which(all_dat$MMSI == vessels),] # select a vessel. In the released sample there are OTB1, TBB1, PTM1, PS1 and OTHER1.
+
 ```
 
 # Summary
@@ -65,25 +120,20 @@ The proposed workflow is hereafter applied on a single vessel although it can be
 
 ```{r}
 vessel = 2
-data = data[which(data$MMSI == vessel),]
-head(data)
+dat = data[which(data$MMSI == vessel),]
+head(dat)
 ```
 
 ## Fishing trip
 The create_fishing_trip function identifies vessel-specific fishing trips for each vessel, as sequences of points broadcasted by a vessel, from the time it leaves the port until it returns. To run the function, four datasets are required to complete the entire workflow: the sequence of AIS positions of a vessel, the coastal_ban_zone layer, and 2 layers related to the ports.
 As AIS transmission gaps (loss of signal of at least 30 minutes) can hamper the identification of the departure and arrival ports, a recovery function was internally applied to join consecutive trips where the departure/arrival port was too far to be assigned. In order to join consecutive trips the function overlays the ending/starting points with the coastal_ban_zone, compares ids between consecutive ending/starting points, compares timestamps and forces a starting and ending port for each trip. In particular, fishing trips are joined and the nearest port is assigned if ending and starting points are consecutive, have a temporal distance shorter than 24 h and at least one is outside the coastal_ban_zone. At the end of the recovery process, for trips that still miss departure and/or arrival ports, the internal function closest_port_recovery is used to force port assignment under other conditions. 
 
-```{r funcdef00, echo = F, eval = F}
-dat_session= create_fishing_trip(data, 
-                                 ports,  
-                                 ports_buffer, 
-                                 coastal_ban_zone, 
-                                 results_table = F)
+```{r, echo = F}
+dat_trip= create_fishing_trip(data = dat, 
+                              ports = ports,  
+                              ports_buffer = port_buf, 
+                              coastal_ban_zone = coastal_ban_zone)
 ```
-
-```{r funcdef00, eval = F}
-```
-<br>
 
 * data: AIS positions
 * ports: port locations (.shp) 
@@ -92,18 +142,20 @@ dat_session= create_fishing_trip(data,
 
 <p> The create_fishing_trip function returns the fishing trip table, listing all the trips performed by the vessel and providing information on: departure/arrival timestamps and departure/arrival port names.
 
+```{r}
+head(dat_trip)
+```
+<br>
+
 
 The fishing trip table created above is required to assign the fishing trip id to the AIS signals of the vessels. However, the  fishing trip table can be useful to store summary information of the fishing trips of a vessel and used to recall records belonging to single trips by using the starting and ending timestamp. In addition, it may be linked with the port layer where information regarding the country and GSA is stored.
 
 <p> The function assign_trip assigns to each AIS position the trip to which it belongs.
 
-```{r assign_session, echo = F, eval = F}
-dat_with_trip = assign_trip(data, 
-                               trip_table)
-head(dat_with_trip)
-```
+```{r assign_session, echo = F}
+dat_with_trip=assign_trip(data=dat, 
+                          trip_table=dat_trip)
 
-```{r assign_session, eval = F}
 ```
 <br>
 
@@ -111,6 +163,11 @@ head(dat_with_trip)
 * trip_table: dataframe containing the list of fishing trips and the relative timestamp information (output of the create_fishing_trip function)
 
 <p> The assign_trip function returns the AIS data indexed with trip information
+```{r, echo=F}
+head(dat_with_trip)
+```
+<br>
+
 
 
 ## Fishing trip classification and gear assignment
@@ -118,16 +175,13 @@ The classification_wrapper function applies a cascade of classification algorith
 
 <p> In particular, a k-means algorithms is performed on trip-specific speed values using 5 different sets of centroids that were a priori defined by experts for each fishing gear type (two for OTB, PTM, TBB and PS), the centroids will represent the different speed profiles of fishing behavioural states. The dbscan algorithm is applied on the latitude and longitude data, with two different sets of neighborhood radii (ε) and a number of minimum points in the ε region. The proportions of points falling within each of the identified clusters are used to label the fishing trip as positive or negative to each of the investigated gears.
 
-```{r dat_classification, echo = F, eval = F}
-dat_classified=classification_wrapper(vessel_data, 
-                                      pars, 
-                                      write.output = F, 
-                                      output.name=F)
+```{r dat_classification, echo = F}
+dat_classified=classification_wrapper(vessel_data=dat_with_trip, 
+                                      pars=pars,
+                                      write.output=T,
+                                      output.name = "test1")
 ```
 
-```{r dat_classification, eval = F}
-```
-<br>
 
 * dat_with_trip: raw AIS data with an additional column indexing the corresponding fishing trip
 * pars: table of parameters required by the classification functions;
@@ -138,7 +192,18 @@ dat_classified=classification_wrapper(vessel_data,
 
 * "data_labelled": returns the input data with an additional column for each classification algorithm, indicating the speed cluster assigned by the k-means (in the case of towed gears: otb1, otb2, tbb, ptm) or the spatial cluster assigned by the dbscan (in the case of ps). Clusters 1-2 refer to data gaps or noise, while clusters 3-6 indicate different fishing behavioural states (e.g., hauling,  searching, steaming). Besides, a column specifying the month in which the trip started is added.
 
+```{r, echo=F}
+head(dat_classified$data_labelled)
+```
+<br>
+
 * "classification_result": contains the binary results of the classification algorithms for each fishing trip and each classification algorithm (otb1, otb2, ptm, tbb, ps);  gaps is the percentage (in respect to the duration of the trip) of AIS shutdowns; n_ping is the number of AIS signals belonging to each trip, and start_month is the month in which the fishing trip starts.
+
+```{r, echo=F}
+head(dat_classified$classification_result)
+```
+<br>
+
 
 <p> In order to accommodate the intra-month variability of the predicted gears, fishing gears are finally reassigned to trips on a monthly basis appling a Random Forest model (RF) using the Random Forest library available in R (Liaw and Viener, 2002). The classification unit of the RF is the set of fishing trips performed in a month by a vessel. 
 
@@ -147,61 +212,60 @@ dat_classified=classification_wrapper(vessel_data,
 
 ```{r out.width = "100%", echo=FALSE, fig.align='center', results = "asis"}
 xx = read.xlsx("site_documents/data_summary_rf.xlsx")
-xx = flextable(xx) %>% autofit()
-xx = width(xx, width = dim(xx)$widths*6/(flextable_dim(xx)$widths))
-cat(knit_print(xx,
-               caption = "Table1: Dataset used to train the RF. Records refer to a classification unit, that is a set of fishing trips performed by a vessel in a month. The gear was assigned manually to each fishing trip, after a visual inspection of the AIS data."))
+knitr::kable(head(xx), full_width = T,
+             caption = "Table1: Dataset used to train the RF. Records refer to a classification unit, that is a set of fishing trips performed by a vessel in a month. The gear was assigned manually to each fishing trip, after a visual inspection of the AIS data.") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
 <br>
 
 The decision_gear function uses the trained RF to predict the fishing gear for each month. The features used to predict the monthly gear consist in the ratio between the trips labelled as positive for each gear and the total number of the fishing trips (ratio_otb1; ratio_otb2; ratio_ptm; ratio_tbb; ratio_ps). 
-```{r gear, echo = F, eval = F}
-gear = decision_gear(data = dat_classified[["classification_result"]])
+
+```{r gear, echo = F}
+gear=decision_gear(data=dat_classified[["classification_result"]])
 ```
 
-```{r gear, eval = F}
-```
-<br>
 
 * data: requires the binary results of the classification algorithms for each fishing trip (output of the classification wrapper “dat_classified[["classification_result"]]”).
 
 The result of the decision gear function is a summary of the binary results aggregated at monthly level and in addition it gives the output of the RF (i.e., gear). 
 
+```{r, echo=F}
+head(gear)
+```
+<br>
+
 ## Fishing activity
 According to the monthly predicted gear, fishing points are identified (identify_fishing_points function) recycling the clusters (k-means - towed gears; dbscan - purse seiners) and retrieving points corresponding to fishing clusters. 
 
-```{r fpoint, echo = F, eval = F}
-fishing_points=identify_fishing_points(data=dat_classified[["data_labelled"]], gear=gear)
-head(fishing_points)
+```{r fpoint, echo = F}
+fishing_points=identify_fishing_points(data=dat_classified[["data_labelled"]], gear=gear, coord_sys = wgs)
 ```
 
-```{r fpoint, eval = F}
-```
-<br>
 
 * data: requires AIS data, indexed by fishing trip and  labelled with the information from k-means and dbscan (output of the classification wrapper “dat_classified[["data_labelled"]]”).
 * gear: the result of the decision gear function, containing the gear predicted by the Random Forest classifier
 
 <p> The fishing_point function returns the original AIS data, labelled with the gear identified and with a column (binary) indicating if the points are considered as fishing activity.
-*POINT is a character codification used instead of the real value of the geometry string
+```{r, echo=F}
+head(fishing_points)
+```
+<br>
+
 
 <p> The make_fishing_tracks function extracts fishing tracks from fishing points, using a temporal threshold (thr_minute, default value set to 30 minutes) to connect successively ordered fishing points ≤ thr_minutes and avoid false fishing tracks connecting two subsequent fishing events. The result of make_fishing_tracks function is a spatial object where the fishing geometries are stored.
 
-```{r fsegment, echo = F, eval = F}
+```{r fsegment, echo = F}
 fishing_tracks=make_fishing_tracks(data=fishing_points, coord_sys=wgs, pars=pars)
-head(fishing_tracks)
 ```
 
-```{r fsegment, eval = F}
-```
-<br>
 
 * fishing_points: AIS data  labelled with the gear identified and with a column (binary) identifying the data considered as fishing activity
 * wgs: coordinate reference system (e.g.: WGS 84)
 * pars: object storing the parameter file.
-
-*LINESTRING is a character codification used instead of the real value of the geometry string
-<p>
+```{r, echo=F}
+head(fishing_tracks$TBB)
+```
+<br>
 
 ## Single command function
 The classification_workflow function applies all the functions presented in the previous sections in one single command starting from raw data and returns the fishing tracks/centroids of a vessel. The output type parameter allows storing fishing geometries as points or linestrings.
@@ -211,12 +275,11 @@ The classification_workflow function applies all the functions presented in the 
 fishing_tracks=classification_workflow(data=data,
                                        ports=ports, 
                                        ports_buffer=port_buf,
-                                       coastline=coastline,
+                                       coastal_ban_zone = coastal_ban_zone,
                                        pars=pars,
                                        coord_sys=wgs,
                                        output.type="segments")
 ```
-
 ```{r cl_workflow, eval = F}
 ```
 <br>
@@ -233,28 +296,145 @@ fishing_tracks=classification_workflow(data=data,
 ## Estimate fishing effort
 Finally, the estimate_fishing_effort function returns a grid populated with cumulative fishing time for the period covered by the input data (hours fishing vessels spent operating gear in each grid cell). Fishing tracks were intersected with the 0.1° grid and durations were computed for each output feature. For towed gears, fishing hours are calculated by dividing resulting lengths by the inherited mean fishing speed. For the purse seiners, fishing hours are calculated by assigning the duration of the cluster to its centroid. The cumulative fishing time was quantified spatial joining each cell with overlapping centroid/portions of hauls, and summing relative durations.
 
-```{r effort, echo = F, eval = F}
+```{r effort, echo = F}
 vessel_grid=estimate_fishing_effort(fishing_tracks, grid=grid)
 ```
 
-```{r effort, eval = F}
+* fishing_tracks: spatial object containing the geometries of the fishing activity
+* grid: spatial object containing the reticule covering the area of interest that will be intersected with the fishing tracks.
+* pars: object storing the parameter file.
+```{r}
+head(vessel_grid)
 ```
 <br>
 
-* fishing_tracks: spatial object containing the geometries of the fishing activity
-* grid: spatial object containing the reticule covering the area of interest that will be intersected with the fishing tracks.
+```{r}
+dat_with_trip = dat_with_trip %>%
+  st_as_sf(coords = c("longitude", "latitude"))
+dat_with_trip$trip = factor(dat_with_trip$trip)
+trip1 <- colorFactor(topo.colors(length(unique(dat_with_trip$trip))), dat_with_trip$trip)
+fishing_tracks$TBB$trip = factor(fishing_tracks$TBB$trip)
+st_crs(fishing_tracks$TBB) = "+proj=longlat +datum=WGS84"
+trip2 <- colorFactor(topo.colors(length(unique(fishing_tracks$TBB$trip))), fishing_tracks$TBB$trip)
+vessel_grid$TBB$effort = cut(vessel_grid$TBB$f_hours, quantile(vessel_grid$TBB$f_hours, seq(0, 1, by = 0.25)), include.lowest = T, right = F)
+st_crs(vessel_grid$TBB) = "+proj=longlat +datum=WGS84"
+effort1 <- colorFactor(viridis(length(unique(vessel_grid$TBB$effort))), vessel_grid$TBB$effort )
+pp_center = st_centroid(fishing_tracks[[1]])
+pp_center
+worldmap = st_transform(worldmap, crs = "+proj=longlat +datum=WGS84")
 
-<p> Effort grid and fishing tracks can be plotted in effort maps.
+leaflet(worldmap) %>%
+  setView(lng = pp_center$geometry[[1]][1], 
+          lat = pp_center$geometry[[1]][2], zoom = 7) %>%
+  addTiles(group = "base") %>%
+  addCircles(st_coordinates(dat_with_trip)[,1],
+                   st_coordinates(dat_with_trip)[,2],
+                   color = "black",
+                   weight = 1,
+                   opacity = 1.0,
+             group = "Raw ping") %>%
+  addCircles(st_coordinates(dat_with_trip)[,1],
+           st_coordinates(dat_with_trip)[,2],
+           color = ~trip1(dat_with_trip$trip),
+           weight = 1,
+           opacity = 1.0,
+           group = "Trips") %>%
+  addPolylines(data = fishing_tracks$TBB, 
+               color = ~trip1(trip), 
+           weight = 1, 
+           opacity = 1.0, 
+           group = "Fishing tracks") %>%
+  addPolygons(data = vessel_grid$TBB, 
+           fillColor = ~effort1(effort), 
+           fillOpacity = 1,
+           weight = 0.5, 
+           opacity = 1, 
+           group = "Fishing effort") %>%
+  addLayersControl(baseGroups = c("base"),
+                   overlayGroups = c("Raw ping", "Trips", "Fishing tracks", "Fishing effort"),
+                   options = layersControlOptions(collapsed = FALSE)) %>% hideGroup(c("Trips", "Fishing tracks", "Fishing effort"))
+```
 
 
 # Multiple vessels with different gears
 To apply the workflow to multiple vessels and aggregate related fishing activities with different temporal frames (e.g., by year and month), the analysis can be arranged as follow: 
 
 1. Create fishing segments for all vessels and store them in a list. Each element of the list is a vessel, whose data is again stored in a list as long as the number of different gears predicted for that vessel. The classification_workflow function is applied iteratively on all vessels present in the data and it allows to calculate the fishing geometry in one single command. 
+```{r all_1, echo = F, eval = F}
+all_dat<-read.csv("data/datatest.csv")
+all_dat=all_dat[,c("MMSI", "datetime", "longitude", "latitude", "speed")]
+all_dat$MMSI=as.character(all_dat$MMSI)
+vessels=unique(all_dat$MMSI)
+all_fishing_tracks=list()
+for(i in 1:length(vessels)){
+  cat("\n", "vessel", i, "of", length(vessels))
+  cat("\n")
+  xvessel=all_dat[which(all_dat$MMSI == vessels[i]),]
+  fishing_tracks=classification_workflow(data=xvessel,
+                                         ports=ports, 
+                                         ports_buffer=port_buf,
+                                         coastline=coastline,
+                                         pars=pars,
+                                         coord_sys=wgs,
+                                         output.type="segments")
+  all_fishing_tracks[[i]]=fishing_tracks
+  names(all_fishing_tracks)[i]=vessels[i]
+}
+```
+
+```{r all_1, eval = F}
+```
+<br>
+
 
 2. Aggregate fishing segments by fishing gear and time period (e.g., month). The first rows of the following code selects all fishing trips that are classified with the same gear. Fishing hours of vessels predicted with the same fishing gear in the same period, are aggregated with respect to a spatial grid to represent the period pattern of spatial activity. In the last rows, grid data is saved in tabular dataframe and in an effort map.
 
+```{r all_2, echo = F, eval = F}
+ref_gear=c("OTB", "PTM", "PS", "TBB")
 
+for(j in 1:length(ref_gear)){
+  xx=lapply(all_fishing_tracks, function(x){
+    rbindlist(lapply(x, function(y){
+      if(unique(y$gear) == ref_gear[j]){
+        return(y)
+      }
+    }))
+  })
+  xgear=ldply(xx, data.frame)
+  ref_time=unique(data.frame(xgear)[,c("year", "month")])
+  for(i in 1:nrow(ref_time)){
+    xvessel=xgear[which(xgear$year == ref_time$year[i] & xgear$month ==   ref_time$month[i]),]
+    xvessel_ls=list(xvessel)
+    xmap=estimate_fishing_effort(xvessel_ls, grid=grid)
+    xmap=ldply(xmap, data.frame)
+    xmap$year=ref_time$year[i]
+    xmap$month=ref_time$month[i]
+    xmap$gear=ref_gear[j]
+    xmap=st_sf(xmap)
+    saveRDS(xmap, file.path(outdir, "tables", paste0(ref_gear[j], "_", ref_time$year[i], "-", ref_time$month[i], ".rData")))
+    worldmap=st_crop(worldmap, st_buffer(xmap, 2.5)) # create map
+    xrange = extendrange(xmap$long, f = 1) 
+    yrange = extendrange(xmap$lat, f = 1) 
+    xvessel_sf=st_sf(xvessel)
+    ggplot()+
+      geom_sf(data=worldmap)+
+      geom_sf(data=xmap, aes(fill=f_hours), color=NA) +
+      geom_sf(data=xvessel_sf, aes(linetype=MMSI, colour=as.factor(trip))) + 
+      coord_sf(xlim=xrange, ylim=yrange) + 
+      theme_bw() +
+      theme(legend.position = "bottom",
+            legend.direction = "horizontal") +
+      guides(colour = guide_legend(title = "trip", nrow = 4)) +
+      ggtitle(paste0(ref_gear[j], ": ", ref_time$year[i], "-", ref_time$month[i]))
+    ggsave(file.path(outdir, "plots", paste0(ref_gear[j], "-", ref_time$year[i], "-", ref_time$month[i], ".png")))
+  }
+}
+
+```
+
+```{r all_2, eval = F}
+```
+<br>
 
 
 
