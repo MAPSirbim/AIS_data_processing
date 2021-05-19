@@ -13,7 +13,9 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-The following functions are used internally to the main functions:
+The following functions are used internally to the main functions.
+
+# Fishing trip 
 
 ## Assign ping to trip
 This function pastes the information from the fishing trip (id of the trip) to the initial dataset. Points that do not fall within a trip are removed.
@@ -27,11 +29,11 @@ assign_trip(data, trip_table)
 ```
 <br>
 
-* data: raw location data.
-* trip_table: a table with id of the vessel, and the starting and ending id of the locations componing a fishing trip.
+* data: AIS positions.
+* trip_table: dataframe containing the list of fishing trips and the relative timestamp information (output of the "create_fishing_trip" function).
 
 ## Build trip
-This function assembles and formats the output of the fishing trip table result.
+This function is used within the "create_fishing_trip" function, serve to calculate and to format trip information and to assemble the output table.
 <br>
 
 ```{r funcdef2, echo = F, eval = F}
@@ -42,7 +44,7 @@ build_trip(data, index, xstart, xpos, index2, ports_buffer, ports)
 ```
 <br>
 
-* data: raw AIS data
+* data: AIS positions
 * index: header specifying the iteration
 * xstart: indicates the id of the first point of the trip
 * xpos: indicates the offset to be imposed on xstart
@@ -62,7 +64,7 @@ check_cluster(data, gear, threshold, low_speed)
 ```
 <br>
 
-* data: AIS data with a column indexing the points belonging to spatial clusters and one indicating the cluster identified * by the k-means for each point
+* data: AIS data with a column indexing the points belonging to spatial clusters and one indicating the cluster identified * by the <i>k-means</i> for each point
 * gear: target fishing gear. Accepted values are PTM, PS
 * threshold: threshold to filter target speed data
 * low_speed: indicates which is the cluster of the <i> k-means </i> referring to the target speed.
@@ -84,7 +86,7 @@ classify(data)
 
 
 ## Classify speed
-Classified speed applies the k-means algorithm on fishing speed data, then it uses time information to identify transmission gaps (or data with time lag > parameter specified by user). Classification results are homogenized with a lookahead (3 points) and finally points are clustered into tracks based on k-means result and time information.
+Classified speed applies the  <i> k-means </i> algorithm on fishing speed data, then it uses time information to identify transmission gaps (or data with time lag > parameter specified by user). Classification results are homogenized with a lookahead (3 points) and finally points are clustered into tracks based on  <i> k-means </i> result and time information.
 
 <br>
 
