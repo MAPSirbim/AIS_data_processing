@@ -29,7 +29,7 @@ assign_trip(data, trip_table)
 <br>
 
 * data: AIS positions.
-* trip_table: dataframe containing the list of fishing trips and the relative timestamp information (output of the "<span>create_fishing_trip</span>" function).
+* trip_table: dataframe containing the list of fishing trips and the relative timestamp information (output of the <span style="color: red;"> create_fishing_trip </span> function).
 
 ## Build trip
 This function is used within the "create_fishing_trip" function, serve to calculate and to format trip information and to assemble the output table.
