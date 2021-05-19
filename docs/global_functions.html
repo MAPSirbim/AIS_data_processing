@@ -19,21 +19,14 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
-<style>h1 {font-size: 34px;}
-       h1.title {font-size: 38px;}
-       h2 {font-size: 30px;}
-       h3 {font-size: 24px;}
-       h4 {font-size: 18px;}
-       h5 {font-size: 16px;}
-       h6 {font-size: 12px;}
-       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
-       pre:not([class]) { background-color: white }</style>
 <script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="site_libs/anchor-sections-1.0/anchor-sections.js"></script>
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -45,6 +38,11 @@
     </style>
 
 <style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
 <script type="text/javascript">
 if (window.hljs) {
   hljs.configure({languages: []});
@@ -57,7 +55,32 @@ if (window.hljs) {
 
 
 
-
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
 
 
 
@@ -67,6 +90,10 @@ if (window.hljs) {
   max-width: 940px;
   margin-left: auto;
   margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
 }
 img {
   max-width:100%;
@@ -83,13 +110,40 @@ button.code-folding-btn:focus {
 summary {
   display: list-item;
 }
-pre code {
-  padding: 0;
-}
 </style>
 
 
 <style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
 .dropdown-submenu {
   position: relative;
 }
@@ -117,7 +171,7 @@ pre code {
   margin-right: -10px;
 }
 .dropdown-submenu:hover>a:after {
-  border-left-color: #adb5bd;
+  border-left-color: #ffffff;
 }
 .dropdown-submenu.pull-left {
   float: none;
@@ -129,7 +183,7 @@ pre code {
 }
 </style>
 
-<script type="text/javascript">
+<script>
 // manage active state of menu based on current page
 $(document).ready(function () {
   // active menu anchor
@@ -140,23 +194,10 @@ $(document).ready(function () {
   var menuAnchor = $('a[href="' + href + '"]');
 
   // mark it active
-  menuAnchor.tab('show');
+  menuAnchor.parent().addClass('active');
 
   // if it's got a parent navbar menu mark it active as well
   menuAnchor.closest('li.dropdown').addClass('active');
-
-  // Navbar adjustments
-  var navHeight = $(".navbar").first().height() + 15;
-  var style = document.createElement('style');
-  var pt = "padding-top: " + navHeight + "px; ";
-  var mt = "margin-top: -" + navHeight + "px; ";
-  var css = "";
-  // offset scroll position for anchor links (for fixed navbar)
-  for (var i = 1; i <= 6; i++) {
-    css += ".section h" + i + "{ " + pt + mt + "}\n";
-  }
-  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
-  document.head.appendChild(style);
 });
 </script>
 
@@ -168,6 +209,7 @@ $(document).ready(function () {
   max-height: 500px;
   min-height: 44px;
   overflow-y: auto;
+  background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
@@ -293,13 +335,13 @@ div.tocify {
 
 
 <!-- setup 3col/9col grid for toc_float and main content  -->
-<div class="row">
-<div class="col-sm-12 col-md-4 col-lg-3">
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
 <div id="TOC" class="tocify">
 </div>
 </div>
 
-<div class="toc-content col-sm-12 col-md-8 col-lg-9">
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -330,7 +372,7 @@ div.tocify {
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-<div id="header">
+<div class="fluid-row" id="header">
 
 
 
@@ -339,24 +381,26 @@ div.tocify {
 </div>
 
 
-<p>The following functions are used internally to the main functions:</p>
+<p>The following functions are used internally to the main functions.</p>
+<div id="fishing-trip" class="section level1">
+<h1>Fishing trip</h1>
 <div id="assign-ping-to-trip" class="section level2">
 <h2>Assign ping to trip</h2>
 <p>This function pastes the information from the fishing trip (id of the trip) to the initial dataset. Points that do not fall within a trip are removed. <br></p>
 <pre class="r"><code>assign_trip(data, trip_table)</code></pre>
 <p><br></p>
 <ul>
-<li>data: raw location data.</li>
-<li>trip_table: a table with id of the vessel, and the starting and ending id of the locations componing a fishing trip.</li>
+<li>data: AIS positions.</li>
+<li>trip_table: dataframe containing the list of fishing trips and the relative timestamp information (output of the “create_fishing_trip” function).</li>
 </ul>
 </div>
 <div id="build-trip" class="section level2">
 <h2>Build trip</h2>
-<p>This function assembles and formats the output of the fishing trip table result. <br></p>
+<p>This function is used within the “create_fishing_trip” function, serve to calculate and to format trip information and to assemble the output table. <br></p>
 <pre class="r"><code>build_trip(data, index, xstart, xpos, index2, ports_buffer, ports)</code></pre>
 <p><br></p>
 <ul>
-<li>data: raw AIS data</li>
+<li>data: AIS positions</li>
 <li>index: header specifying the iteration</li>
 <li>xstart: indicates the id of the first point of the trip</li>
 <li>xpos: indicates the offset to be imposed on xstart</li>
@@ -371,7 +415,7 @@ div.tocify {
 <pre class="r"><code>check_cluster(data, gear, threshold, low_speed)</code></pre>
 <p><br></p>
 <ul>
-<li>data: AIS data with a column indexing the points belonging to spatial clusters and one indicating the cluster identified * by the k-means for each point</li>
+<li>data: AIS data with a column indexing the points belonging to spatial clusters and one indicating the cluster identified * by the <i>k-means</i> for each point</li>
 <li>gear: target fishing gear. Accepted values are PTM, PS</li>
 <li>threshold: threshold to filter target speed data</li>
 <li>low_speed: indicates which is the cluster of the <i> k-means </i> referring to the target speed.</li>
@@ -389,7 +433,7 @@ div.tocify {
 </div>
 <div id="classify-speed" class="section level2">
 <h2>Classify speed</h2>
-<p>Classified speed applies the k-means algorithm on fishing speed data, then it uses time information to identify transmission gaps (or data with time lag &gt; parameter specified by user). Classification results are homogenized with a lookahead (3 points) and finally points are clustered into tracks based on k-means result and time information.</p>
+<p>Classified speed applies the <i> k-means </i> algorithm on fishing speed data, then it uses time information to identify transmission gaps (or data with time lag &gt; parameter specified by user). Classification results are homogenized with a lookahead (3 points) and finally points are clustered into tracks based on <i> k-means </i> result and time information.</p>
 <p><br></p>
 <pre class="r"><code>classify_speed(data, gear, xcentroids, pars)</code></pre>
 <p><br></p>
@@ -432,7 +476,7 @@ div.tocify {
 </div>
 <div id="find-the-closest-harbour" class="section level2">
 <h2>Find the closest harbour</h2>
-<p>This function was used to assign the harbor to fishing session the start or finish without a &quot;in harbor&quot; position. The departure or the arrival harbor was assigned considering the closest harbor respect to the first or last position of the session: <br></p>
+<p>This function was used to assign the harbor to fishing session the start or finish without a “in harbor” position. The departure or the arrival harbor was assigned considering the closest harbor respect to the first or last position of the session: <br></p>
 <pre class="r"><code>closest_port(longitude , latitude, ports)</code></pre>
 <p><br></p>
 <ul>
@@ -465,7 +509,7 @@ div.tocify {
 </div>
 <div id="identify-transmission-gaps" class="section level2">
 <h2>Identify transmission gaps</h2>
-<p>This function recycles the data gaps from the function &quot;core_function&quot; and retrieves tracks corresponding to gaps in the AIS signal:</p>
+<p>This function recycles the data gaps from the function “core_function” and retrieves tracks corresponding to gaps in the AIS signal:</p>
 <p><br></p>
 <pre class="r"><code>identify_trasmission_gaps(data, coord_sys)</code></pre>
 <p><br></p>
@@ -520,6 +564,7 @@ div.tocify {
 <li>gear: target fishing gear. Accepted values are OTB1, OTB2, PTM, TBB.</li>
 </ul>
 </div>
+</div>
 
 
 
@@ -550,7 +595,7 @@ $(document).ready(function () {
 
 $(document).ready(function () {
   $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open');
+    $(this).parent().toggleClass('nav-tabs-open')
   });
 });
 </script>

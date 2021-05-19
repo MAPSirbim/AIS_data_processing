@@ -73,9 +73,11 @@ dat=all_dat[which(all_dat$MMSI == vessels),] # select a vessel. In the released 
 
 ```
 
-# Summary
-
 This release note aims to describe the AIS processing method hosted in the repository (https://github.com/MAPSirbim/AIS_data_processing/tree/v1.0.1), also available at 10.5281/zenodo.4757505. The processing workflow was developed on historical annotated data of the Adriatic Sea (Mediterannean Sea) and aims to (i) identify individual fishing trips and (ii) classify them on a monthly basis according to 5 predefined gear classes: bottom otter trawl (OTB), pelagic pair trawl (PTM), beam trawl (TBB), purse seine (PS), and “other” fishing (OTHER,  including dredges and passive gears). 
+
+
+<p> ![Figure 1: Conceptual framework of the worflow used in AIS data processing](documents/conceptual_workflow.jpeg)
+
 
 In the repository we also release:
 
