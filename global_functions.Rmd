@@ -16,23 +16,9 @@ knitr::opts_chunk$set(echo = TRUE)
 The following functions are used internally to the main functions.
 
 
-## Assign ping to trip
-This function pastes the information from the fishing trip (id of the trip) to the initial dataset. Points that do not fall within a trip are removed.
-<br>
-
-```{r funcdef1, echo = F, eval = F}
-assign_trip(data, trip_table)
-```
-
-```{r funcdef1, eval = F}
-```
-<br>
-
-* data: AIS positions.
-* trip_table: dataframe containing the list of fishing trips and the relative timestamp information (output of the <span style="color: red;"> create_fishing_trip </span> function).
-
 ## Build trip
-This function is used within the "create_fishing_trip" function, serve to calculate and to format trip information and to assemble the output table.
+Called by `create_fishing_trip`.<br />
+This function serve to calculate and to format trip information and to assemble the output table.
 <br>
 
 ```{r funcdef2, echo = F, eval = F}
@@ -41,7 +27,7 @@ build_trip(data, index, xstart, xpos, index2, ports_buffer, ports)
 
 ```{r funcdef2, eval = F}
 ```
-<br>
+
 
 * data: AIS positions
 * index: header specifying the iteration
@@ -51,7 +37,11 @@ build_trip(data, index, xstart, xpos, index2, ports_buffer, ports)
 * ports_buffer: 0.001° buffer of the ports layer
 * ports: ports layer
 
+<br>
+
 ## Check cluster
+
+Called by `classification_wrapper`.<br />
 This function analyzes the speed profile of the points contained within a spatial cluster, and indicates if the proportion of the point indicated by the target speed is above a specified threshold
 <br>
 
@@ -61,16 +51,18 @@ check_cluster(data, gear, threshold, low_speed)
 
 ```{r funcdef3, eval = F}
 ```
-<br>
+
 
 * data: AIS positions with a column indexing the points belonging to spatial clusters and one indicating the cluster identified by the <i>k-means</i> for each point
 * gear: target fishing gear. Accepted values are PTM, PS
 * threshold: threshold to filter target speed data
 * low_speed: indicates which is the cluster of the <i> k-means </i> referring to the target speed.
 
-## Classify
-This function identifies the size of each track. 
+<br>
 
+## Classify
+Called by `classification_wrapper`.<br />
+This function identifies the size of each track. 
 <br>
 
 ```{r funcdef4, echo = F, eval = F}
@@ -79,14 +71,14 @@ classify(data)
 
 ```{r funcdef4, eval = F}
 ```
+
+* data: output of `classifify_speed`
+
 <br>
 
-* data: output of the classifify_speed function
-
-
 ## Classify speed
+Called by `classification_wrapper`.<br />
 Classified speed applies the  <i> k-means </i> algorithm on fishing speed data, then it uses time information to identify transmission gaps (or data with time lag > parameter specified by user). Classification results are homogenized with a lookahead (3 points) and finally points are clustered into tracks based on  <i> k-means </i> result and time information.
-
 <br>
 
 ```{r funcdef5, echo = F, eval = F}
@@ -95,15 +87,16 @@ classify_speed(data, gear, xcentroids, pars)
 
 ```{r funcdef5, eval = F}
 ```
-<br>
-
 * data: AIS positions
 * gear: target gear. Accepted values are OTB1, OTB2, PTM, TBB, PS.
 * xcentroids: object containing the centroid list inherited from the input .csv file.
 * pars: object storing the parameter file.
 
+<br>
+
 ## Core function
-the core function process one fishing trip at time. It search for spatial clusters of points by appliying a dbscan algorithm and then it classify the fishing data basing on the speed by applying a kmeans algorithm. Information on the spatial cluster and on the speed classification are evaluated within a set of rules designed to identify a range of fishing gears. 
+Called by `classification_wrapper`.<br />
+This function controls most of the functions called by `classification_wrapper`, and apply them in the right sequential order to one fishing trip at time. It search for spatial clusters of points by appliying a dbscan algorithm and then it classify the fishing data basing on the speed by applying a kmeans algorithm. Information on the spatial cluster and on the speed classification are evaluated within a set of rules designed to identify a range of fishing gears. 
 <br>
 
 ```{r funcdef501, echo = F, eval = F}
@@ -112,14 +105,14 @@ core_function(trip_data, pars)
 
 ```{r funcdef501, eval = F}
 ```
-<br>
-
-* trip_data: 
+* trip_data: list of AIS positions divided by trip
 * pars: object storing the parameter file.
 
+<br>
 
 ## Data partitioning for model
-Add text. 
+This function is not called by any of the functions listed in the processing workflow. <br />
+This function serve to format the data required to train the Random Forest algorithm. 
 <br>
 
 ```{r funcdef502, echo = F, eval = F}
@@ -128,13 +121,13 @@ data_partition(data)
 
 ```{r funcdef502, eval = F}
 ```
+* data: groundthuth information for vessels gear.
+
 <br>
 
-* data:
-
 ## Find in harbour
+Called by `create_fishing_trip`.<br />
 This function is used to individuate if there are points (x,y) that fall within the polygon of harbours, and, eventually, it indicates which are these points.
-
 <br>
 
 ```{r funcdef6, echo = F, eval = F}
@@ -143,13 +136,13 @@ find_inport(data, ports)
 
 ```{r funcdef6, eval = F}
 ```
-<br>
-
-* data: raw AIS data
+* data: AIS positions
 * ports: ports layer
 
+<br>
 
 ## Find the closest harbour
+Called by `create_fishing_trip`.<br />
 This function was used to assign the harbor to fishing session the start or finish without a "in harbor" position. The departure or the arrival harbor was assigned considering the closest harbor respect to the first or last position of the session:
 <br>
 
@@ -159,12 +152,14 @@ closest_port(longitude , latitude, ports)
 
 ```{r funcdef7, eval = F}
 ```
-<br>
 
 * longitude-latitude: are the coordinates of the first or last point of the fishing session
 * ports: is the shapefile with harbors locations
 
+<br>
+
 ## Find the closest harbour recovery
+Called by `create_fishing_trip`.<br />
 This function is used to assign the beginning and ending ports of fishing tripsduring the recovery step of the create_fishing_trip function. This function individuate if there are harbours closest then 50 km with respect to the first or last position of the trip. If there are harbours, the function selects the closest five, then it checks if the reference_port is included in the closest five. If yes, it assign this harbour, if no, it assign the closest harbour:
 <br>
 
@@ -174,16 +169,16 @@ closest_port_recovery(longitude , latitude, ports, reference_port)
 
 ```{r funcdef8, eval = F}
 ```
-<br>
 
 * longitude-latitude: are the coordinates of the first or last point of the fishing trip
 * ports:  ports layer
 * reference_port: is the harbour at the other extremity of the fishing trip. Example: if longitude and latitude indicates the first point of the trip, reference_port will be the port of arrival.
 
+<br>
 
 ## Find the overlapping harbour
+Called by `create_fishing_trip`.<br />
 This function is used to assign the beginning and ending ports of fishing trips, by the means of a spatial intersection between coordinates and the ports buffer layer. If the intersection is successful, it return the name of the identified harbour: 
-
 <br>
 
 ```{r funcdef9, echo = F, eval = F}
@@ -192,17 +187,16 @@ get_port(longitude , latitude, ports_buffer, ports)
 
 ```{r funcdef9, eval = F}
 ```
-<br>
 
 * longitude-latitude: are the coordinates of the first or last point of the fishing trip
 * ports_buffer:  1km buffer of the ports layer
 * ports: ports layer
 
+<br>
+
 ## Identify transmission gaps
-
-This function recycles the data gaps from the function "core_function" and retrieves tracks corresponding to gaps in the AIS signal:
- 
-
+This function is not called by any of the functions listed in the processing workflow. <br />
+This function recycles the data gaps from the function "core_function" and retrieves tracks corresponding to gaps in the AIS signal.
 <br>
 
 ```{r funcdef10, echo = F, eval = F}
@@ -211,14 +205,15 @@ identify_trasmission_gaps(data, coord_sys)
 
 ```{r funcdef10, eval = F}
 ```
-<br>
 
-* data: results from “classification wrapper” function, consisting in raw AIS data labelled with the k-means results
+* data: results from “classification wrapper” function, consisting in raw AIS data labelled with the <i>k-means</i> results
 * coord_sys: coordinates system (e.g.: WGS 84)
 
-## Import parameters
-The import_parameters allows to load the required parameters of several internal functions. 
+<br>
 
+## Import parameters
+This function is not called by any of the functions listed in the processing workflow. <br />
+The import_parameters allows to load the required parameters of several internal functions. 
 <br>
 
 ```{r funcdef11, echo = F, eval = F}
@@ -227,15 +222,15 @@ import_parameters(parameters, centroids)
 
 ```{r funcdef11, eval = F}
 ```
-<br>
 
 * parameters: an external csv file with the following parameters:
 * centroids: an external csv file containing the set of centroids values to test using the kmeans method in the classification alghorithm
 
+<br>
+
 ## Inspect coastal ban zone
+Called by `create_fishing_trip`.<br />
 This function is used to individuate if the last point of a fishing trip (n) and the first point of the subsequent fishing trip (n+1), lies within the coastal ban zone. It returns the number of points individuated:
-
-
 <br>
 
 ```{r funcdef12, echo = F, eval = F}
@@ -244,16 +239,17 @@ incoastal_ban_zone(longitude_start , latitude_start , longitude_end , latitude_e
 
 ```{r funcdef12, eval = F}
 ```
-<br>
+
 
 * longitude-latitude_start: are the coordinates of the first point of the fishing trip n+1
 * longitude-latitude_end: are the coordinates of the last point of the fishing trip n
 * coastal_ban_zone: coastal ban zone layer
 
+<br>
 
 ## Make tracks lite
-This function assigns unique ids to subsequent points if they fall within the same cluster inherited from k-means, thus creating  groups of homogeneous points, corresponding to different phases of the activity (mainly steaming and fishing).  Then it removes the first and the last steaming tracks.
-
+Called by `classification_wrapper`.<br />
+This function assigns unique ids to subsequent points if they fall within the same cluster inherited from <i>k-means</i>, thus creating  groups of homogeneous points, corresponding to different phases of the activity (mainly steaming and fishing).  Then it removes the first and the last steaming tracks.
 <br>
 
 ```{r funcdef13, echo = F, eval = F}
@@ -262,15 +258,15 @@ make_segment_lite(data, gear)
 
 ```{r funcdef13, eval = F}
 ```
-<br>
 
-* data: ais data with a column indicating the cluster identified by the k-means for each point.
+* data: AIS positions with a column indicating the cluster identified by the <i>k-means</i> for each point.
 * gear: target fishing gear. Accepted values are OTB1, OTB2, TBB, PTM, PS
 
+<br>
+
 ## Search cluster
+Called by `classification_wrapper`.<br />
 This function applies the dbscan algorithm to identify spatial clusters in the input data.  
-
-
 <br>
 
 ```{r funcdef14, echo = F, eval = F}
@@ -279,10 +275,10 @@ search_cluster(data, pars, gear)
 
 ```{r funcdef14, eval = F}
 ```
-<br>
 
-* data: raw ais data
+* data: AIS positions
 * pars: object storing the parameter file. Different parameters are provided for different fishing gears.
 * gear: target fishing gear. Accepted values are OTB1, OTB2, PTM, TBB.
 
+<br>
 
