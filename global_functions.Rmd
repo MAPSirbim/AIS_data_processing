@@ -15,7 +15,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The following functions are used internally to the main functions.
 
-# Fishing trip 
 
 ## Assign ping to trip
 This function pastes the information from the fishing trip (id of the trip) to the initial dataset. Points that do not fall within a trip are removed.
@@ -30,7 +29,7 @@ assign_trip(data, trip_table)
 <br>
 
 * data: AIS positions.
-* trip_table: dataframe containing the list of fishing trips and the relative timestamp information (output of the "create_fishing_trip" function).
+* trip_table: dataframe containing the list of fishing trips and the relative timestamp information (output of the "<span>create_fishing_trip</span>" function).
 
 ## Build trip
 This function is used within the "create_fishing_trip" function, serve to calculate and to format trip information and to assemble the output table.
@@ -64,7 +63,7 @@ check_cluster(data, gear, threshold, low_speed)
 ```
 <br>
 
-* data: AIS data with a column indexing the points belonging to spatial clusters and one indicating the cluster identified * by the <i>k-means</i> for each point
+* data: AIS positions with a column indexing the points belonging to spatial clusters and one indicating the cluster identified by the <i>k-means</i> for each point
 * gear: target fishing gear. Accepted values are PTM, PS
 * threshold: threshold to filter target speed data
 * low_speed: indicates which is the cluster of the <i> k-means </i> referring to the target speed.
@@ -98,7 +97,7 @@ classify_speed(data, gear, xcentroids, pars)
 ```
 <br>
 
-* data: raw AIS data
+* data: AIS positions
 * gear: target gear. Accepted values are OTB1, OTB2, PTM, TBB, PS.
 * xcentroids: object containing the centroid list inherited from the input .csv file.
 * pars: object storing the parameter file.

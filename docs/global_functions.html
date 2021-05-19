@@ -382,8 +382,6 @@ div.tocify {
 
 
 <p>The following functions are used internally to the main functions.</p>
-<div id="fishing-trip" class="section level1">
-<h1>Fishing trip</h1>
 <div id="assign-ping-to-trip" class="section level2">
 <h2>Assign ping to trip</h2>
 <p>This function pastes the information from the fishing trip (id of the trip) to the initial dataset. Points that do not fall within a trip are removed. <br></p>
@@ -391,7 +389,7 @@ div.tocify {
 <p><br></p>
 <ul>
 <li>data: AIS positions.</li>
-<li>trip_table: dataframe containing the list of fishing trips and the relative timestamp information (output of the “create_fishing_trip” function).</li>
+<li>trip_table: dataframe containing the list of fishing trips and the relative timestamp information (output of the “<span>create_fishing_trip</span>” function).</li>
 </ul>
 </div>
 <div id="build-trip" class="section level2">
@@ -415,7 +413,7 @@ div.tocify {
 <pre class="r"><code>check_cluster(data, gear, threshold, low_speed)</code></pre>
 <p><br></p>
 <ul>
-<li>data: AIS data with a column indexing the points belonging to spatial clusters and one indicating the cluster identified * by the <i>k-means</i> for each point</li>
+<li>data: AIS positions with a column indexing the points belonging to spatial clusters and one indicating the cluster identified by the <i>k-means</i> for each point</li>
 <li>gear: target fishing gear. Accepted values are PTM, PS</li>
 <li>threshold: threshold to filter target speed data</li>
 <li>low_speed: indicates which is the cluster of the <i> k-means </i> referring to the target speed.</li>
@@ -438,7 +436,7 @@ div.tocify {
 <pre class="r"><code>classify_speed(data, gear, xcentroids, pars)</code></pre>
 <p><br></p>
 <ul>
-<li>data: raw AIS data</li>
+<li>data: AIS positions</li>
 <li>gear: target gear. Accepted values are OTB1, OTB2, PTM, TBB, PS.</li>
 <li>xcentroids: object containing the centroid list inherited from the input .csv file.</li>
 <li>pars: object storing the parameter file.</li>
@@ -563,7 +561,6 @@ div.tocify {
 <li>pars: object storing the parameter file. Different parameters are provided for different fishing gears.</li>
 <li>gear: target fishing gear. Accepted values are OTB1, OTB2, PTM, TBB.</li>
 </ul>
-</div>
 </div>
 
 
