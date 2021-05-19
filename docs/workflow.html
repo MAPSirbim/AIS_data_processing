@@ -410,6 +410,10 @@ head(dat)</code></pre>
 <div id="fishing-trip" class="section level2">
 <h2>Fishing trip</h2>
 <p>The create_fishing_trip function identifies vessel-specific fishing trips for each vessel, as sequences of points broadcasted by a vessel, from the time it leaves the port until it returns. To run the function, four datasets are required to complete the entire workflow: the sequence of AIS positions of a vessel, the coastal_ban_zone layer, and 2 layers related to the ports. As AIS transmission gaps (loss of signal of at least 30 minutes) can hamper the identification of the departure and arrival ports, a recovery function was internally applied to join consecutive trips where the departure/arrival port was too far to be assigned. In order to join consecutive trips the function overlays the ending/starting points with the coastal_ban_zone, compares ids between consecutive ending/starting points, compares timestamps and forces a starting and ending port for each trip. In particular, fishing trips are joined and the nearest port is assigned if ending and starting points are consecutive, have a temporal distance shorter than 24 h and at least one is outside the coastal_ban_zone. At the end of the recovery process, for trips that still miss departure and/or arrival ports, the internal function closest_port_recovery is used to force port assignment under other conditions.</p>
+<pre class="r"><code>dat_trip= create_fishing_trip(data = dat, 
+                              ports = ports,  
+                              ports_buffer = port_buf, 
+                              coastal_ban_zone = coastal_ban_zone)</code></pre>
 <pre><code>## ================================================================================
 ##  trip create complete!!!
 ##  Recovery trip
@@ -434,6 +438,8 @@ head(dat)</code></pre>
 <p>The fishing trip table created above is required to assign the fishing trip id to the AIS signals of the vessels. However, the fishing trip table can be useful to store summary information of the fishing trips of a vessel and used to recall records belonging to single trips by using the starting and ending timestamp. In addition, it may be linked with the port layer where information regarding the country and GSA is stored.</p>
 <p>
 <p>The function assign_trip assigns to each AIS position the trip to which it belongs.</p>
+<pre class="r"><code>dat_with_trip=assign_trip(data=dat, 
+                          trip_table=dat_trip)</code></pre>
 <p><br></p>
 <ul>
 <li>data: AIS positions</li>
@@ -455,6 +461,10 @@ head(dat)</code></pre>
 <p>The classification_wrapper function applies a cascade of classification algorithms on each fishing trip, using as input the AIS positions with their assigned trip (dat_with_trip) and the specific parameters needed for each classification algorithm (pars). The classification of each fishing trip is done by two internal functions (classify_speed and search_cluster), whose results are used to label each fishing point according to the speed clusters (in the case of towed gears) or spatial clusters (in the case of PS).</p>
 <p>
 <p>In particular, a k-means algorithms is performed on trip-specific speed values using 5 different sets of centroids that were a priori defined by experts for each fishing gear type (two for OTB, PTM, TBB and PS), the centroids will represent the different speed profiles of fishing behavioural states. The dbscan algorithm is applied on the latitude and longitude data, with two different sets of neighborhood radii (ε) and a number of minimum points in the ε region. The proportions of points falling within each of the identified clusters are used to label the fishing trip as positive or negative to each of the investigated gears.</p>
+<pre class="r"><code>dat_classified=classification_wrapper(vessel_data=dat_with_trip, 
+                                      pars=pars,
+                                      write.output=T,
+                                      output.name = &quot;test1&quot;)</code></pre>
 <pre><code>## [1] &quot;MMSI: 2 ; start month: 6 ; trip: 1&quot;
 ## [1] &quot;MMSI: 2 ; start month: 6 ; trip: 2&quot;
 ## [1] &quot;MMSI: 2 ; start month: 6 ; trip: 4&quot;
@@ -634,6 +644,7 @@ OTHER
 </table>
 <p><br></p>
 <p>The decision_gear function uses the trained RF to predict the fishing gear for each month. The features used to predict the monthly gear consist in the ratio between the trips labelled as positive for each gear and the total number of the fishing trips (ratio_otb1; ratio_otb2; ratio_ptm; ratio_tbb; ratio_ps).</p>
+<pre class="r"><code>gear=decision_gear(data=dat_classified[[&quot;classification_result&quot;]])</code></pre>
 <ul>
 <li>data: requires the binary results of the classification algorithms for each fishing trip (output of the classification wrapper “dat_classified[[&quot;classification_result&quot;]]”).</li>
 </ul>
@@ -647,6 +658,7 @@ OTHER
 <div id="fishing-activity" class="section level2">
 <h2>Fishing activity</h2>
 <p>According to the monthly predicted gear, fishing points are identified (identify_fishing_points function) recycling the clusters (k-means - towed gears; dbscan - purse seiners) and retrieving points corresponding to fishing clusters.</p>
+<pre class="r"><code>fishing_points=identify_fishing_points(data=dat_classified[[&quot;data_labelled&quot;]], gear=gear, coord_sys = wgs)</code></pre>
 <ul>
 <li>data: requires AIS data, indexed by fishing trip and labelled with the information from k-means and dbscan (output of the classification wrapper “dat_classified[[&quot;data_labelled&quot;]]”).</li>
 <li>gear: the result of the decision gear function, containing the gear predicted by the Random Forest classifier</li>
@@ -668,6 +680,7 @@ OTHER
 <p><br></p>
 <p>
 <p>The make_fishing_tracks function extracts fishing tracks from fishing points, using a temporal threshold (thr_minute, default value set to 30 minutes) to connect successively ordered fishing points ≤ thr_minutes and avoid false fishing tracks connecting two subsequent fishing events. The result of make_fishing_tracks function is a spatial object where the fishing geometries are stored.</p>
+<pre class="r"><code>fishing_tracks=make_fishing_tracks(data=fishing_points, coord_sys=wgs, pars=pars)</code></pre>
 <ul>
 <li>fishing_points: AIS data labelled with the gear identified and with a column (binary) identifying the data considered as fishing activity</li>
 <li>wgs: coordinate reference system (e.g.: WGS 84)</li>
@@ -718,6 +731,7 @@ OTHER
 <div id="estimate-fishing-effort" class="section level2">
 <h2>Estimate fishing effort</h2>
 <p>Finally, the estimate_fishing_effort function returns a grid populated with cumulative fishing time for the period covered by the input data (hours fishing vessels spent operating gear in each grid cell). Fishing tracks were intersected with the 0.1° grid and durations were computed for each output feature. For towed gears, fishing hours are calculated by dividing resulting lengths by the inherited mean fishing speed. For the purse seiners, fishing hours are calculated by assigning the duration of the cluster to its centroid. The cumulative fishing time was quantified spatial joining each cell with overlapping centroid/portions of hauls, and summing relative durations.</p>
+<pre class="r"><code>vessel_grid=estimate_fishing_effort(fishing_tracks, grid=grid)</code></pre>
 <ul>
 <li>fishing_tracks: spatial object containing the geometries of the fishing activity</li>
 <li>grid: spatial object containing the reticule covering the area of interest that will be intersected with the fishing tracks.</li>
