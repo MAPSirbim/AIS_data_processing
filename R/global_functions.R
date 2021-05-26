@@ -497,7 +497,7 @@ core_function=function(trip_data, pars){
         if(nrow(res_ps)==0){
           result_ps=0
         }else{
-          if(res_ps[res_ps$cluster==3,]$ping_number > 1000){
+          if(res_ps[res_ps$cluster==3,]$ping_number > pars$size_ps){
             result_ps=0
           }else{
             result_ps=1
