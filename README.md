@@ -36,6 +36,7 @@ A detailed description of the methodology is provided in the [Release notes](htt
 <div id="refs" class="references">
 
 <div id="ref-Galdelli2019">
+ 
 
 Galdelli, A., Mancini, A., Tassetti, A. N., Ferrà Vega, C., Armelloni, E., Scarcella, G., Fabi, G., et al. 2019. 
 "A Cloud Computing Architecture to Map Trawling Activities Using Positioning Data." 
